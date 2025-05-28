@@ -6,3 +6,4 @@ motion
 clsx
 tailwind-merge
 reactflow
+npx shadcn@latest add sidebar

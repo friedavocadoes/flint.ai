@@ -84,10 +84,10 @@ const chats = [
 
 export default function PathwayPage() {
   return (
-    <div className="flex flex-col p-4 mt-20 mb-20">
+    <div className="flex flex-col p-4 pl-1 mt-12 mb-20">
       <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1>
       <div className="mx-auto h-100 w-100">
-        <CareerFlowchart data={geminiData} />
+        {/* <CareerFlowchart data={geminiData} /> */}
       </div>
     </div>
   );
