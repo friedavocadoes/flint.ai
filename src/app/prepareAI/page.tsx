@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState, useEffect } from "react";
+import type { Stage, MyConnection, PathwayData } from "./types";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,22 +14,6 @@ import ReactFlow, {
   Connection,
 } from "reactflow";
 import "reactflow/dist/style.css";
-
-// Types
-interface Stage {
-  id: string;
-  title: string;
-}
-
-interface MyConnection {
-  from: string;
-  to: string;
-}
-
-interface PathwayData {
-  stages: Stage[];
-  connections: MyConnection[];
-}
 
 const geminiData: PathwayData = {
   stages: [
@@ -46,9 +31,11 @@ const geminiData: PathwayData = {
 
 export default function PathwayPage() {
   return (
-    <div className="p-4 mt-20">
-      <h1 className="text-2xl font-bold mb-4">Your Career Pathway</h1>
-      <CareerFlowchart data={geminiData} />
+    <div className="flex flex-col p-4 mt-20">
+      <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1>
+      <div className="mx-auto w-100">
+        <CareerFlowchart data={geminiData} />
+      </div>
     </div>
   );
 }
@@ -89,6 +76,7 @@ function CareerFlowchart({ data }: { data: PathwayData }) {
 
   // Save to localStorage on every change
   useEffect(() => {
+    // save to backend logic, on updte display a notif
     localStorage.setItem("flowchartData", JSON.stringify({ nodes, edges }));
   }, [nodes, edges]);
 
