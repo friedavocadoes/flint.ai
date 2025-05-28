@@ -1,0 +1,29 @@
+{
+  "name": "flint.ai",
+  "version": "1.0.0",
+  "description": "backend of flint",
+  "main": "app.js",
+  "type":"module",
+  "scripts": {
+    "test": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/friedavocadoes/flint.ai.git"
+  },
+  "author": "gautham",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/friedavocadoes/flint.ai/issues"
+  },
+  "homepage": "https://github.com/friedavocadoes/flint.ai#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.15.1",
+    "nodemon": "^3.1.10"
+  }
+}
