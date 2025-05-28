@@ -2,3 +2,6 @@ next-themes
 lucide-react
 npx shadcn@latest add dropdown-menu
 npx shadcn@latest add button
+motion
+clsx
+tailwind-merge
