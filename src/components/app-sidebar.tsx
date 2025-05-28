@@ -51,11 +51,11 @@ export function AppSidebar() {
           {/* add button starts */}
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key="Add" className="mt-4">
+              <SidebarMenuItem key="Add" className="mt-1 mb-2">
                 <SidebarMenuButton asChild>
                   <a href="#">
                     <Plus />
-                    <span>Add a new career </span>
+                    <span>Plan a new career </span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>

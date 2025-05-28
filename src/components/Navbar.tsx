@@ -1,18 +1,24 @@
 "use client";
-import React from "react";
+import React, { use } from "react";
 import Link from "next/link";
 import { ModeToggle } from "./ui/themeToggle";
 import { useState } from "react";
 import { HoveredLink, Menu, MenuItem, ProductItem } from "./ui/navbar-menu";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
+  const pathname = usePathname();
+  console.log(pathname);
   return (
     <>
       <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         <div>
           <Link href="/" className="font-bold text-2xl">
-            Flint.ai
+            Flint.ai{" "}
+            {pathname === "/prepareAI" && (
+              <span className="text-secondary cursor-default">/prepareAI</span>
+            )}
           </Link>
         </div>
         <div className="mx-auto">
