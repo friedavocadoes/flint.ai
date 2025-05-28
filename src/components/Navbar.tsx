@@ -9,7 +9,7 @@ export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
   return (
     <>
-      <div className="fixed w-full h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
+      <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         <div>
           <Link href="/" className="font-bold text-2xl">
             Flint.ai
@@ -20,17 +20,17 @@ export default function Navbar() {
             setActive={setActive}
             className="flex text-gray-400 space-x-3 md:space-x-6"
           >
-            <MenuItem setActive={setActive} active={active} item="Products">
+            <MenuItem setActive={setActive} active={active} item="Tools">
               <div className="  text-sm grid grid-cols-2 gap-10 p-4">
                 <ProductItem
                   title="Resume Analyser"
-                  href="#"
+                  href="/resume"
                   src="/thumbs/resume.jpg"
                   description="Analyze and score your Resume with AI to bust through the ATS'"
                 />
                 <ProductItem
                   title="Prepare with Flint"
-                  href="#"
+                  href="/prepareAI"
                   src="/thumbs/prep.jpeg"
                   description="Create a career roadmap and land your dream job."
                 />

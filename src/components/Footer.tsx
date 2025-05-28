@@ -11,8 +11,8 @@ export default function Footer() {
       title: "General",
       links: [
         { label: "Home", href: "/" },
-        { label: "Resume Scorer", href: "#" },
-        { label: "Prepare your career", href: "#" },
+        { label: "Resume Analyzer", href: "/resume" },
+        { label: "Prepare your career", href: "/prepareAI" },
         { label: "Discussions", href: "#" },
       ],
     },
