@@ -13,16 +13,18 @@ import ReactFlow, {
   Edge,
   Connection,
 } from "reactflow";
+import { Button } from "./button";
+import { Plus, PlusCircleIcon, Trash } from "lucide-react";
 
 export default function CareerFlowchart({ data }: { data: PathwayData }) {
-  const nodeSpacingX = 250;
+  const nodeSpacingX = 100;
   const nodeSpacingY = 100;
 
   // Build initial nodes & edges from data
   const initialNodes: Node[] = data.stages.map((stage, idx) => ({
     id: stage.id,
     data: { label: stage.title },
-    position: { x: idx * nodeSpacingX, y: nodeSpacingY },
+    position: { x: nodeSpacingX, y: idx * nodeSpacingY }, // vertical layout
   }));
 
   const initialEdges: Edge[] = data.connections.map((conn) => ({
@@ -115,25 +117,6 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <div className="mb-2 flex gap-2">
-        <button
-          onClick={addNode}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Add Node
-        </button>
-        <button
-          onClick={deleteSelectedNode}
-          disabled={!selectedNodeId}
-          className={`px-4 py-2 rounded ${
-            selectedNodeId
-              ? "bg-red-600 hover:bg-red-700 text-white"
-              : "bg-gray-400 text-gray-200 cursor-not-allowed"
-          }`}
-        >
-          Delete Selected Node
-        </button>
-      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -148,6 +131,28 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
         <Controls />
         <Background gap={20} />
       </ReactFlow>
+      <div className="flex mt-2 gap-2 justify-center">
+        <Button
+          variant="secondary"
+          onClick={addNode}
+          className="cursor-pointer"
+        >
+          <PlusCircleIcon />
+          Create Node
+        </Button>
+
+        <Button
+          onClick={deleteSelectedNode}
+          disabled={!selectedNodeId}
+          variant="destructive"
+          className={`cursor-pointer ${
+            selectedNodeId && "hover:opacity-90 transition duration-200"
+          }`}
+        >
+          <Trash />
+          Delete Node
+        </Button>
+      </div>
     </div>
   );
 }

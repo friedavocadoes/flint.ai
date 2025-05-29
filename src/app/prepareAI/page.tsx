@@ -126,19 +126,26 @@ export default function PathwayPage() {
           {!selectedChat && <div className="text-lg">hello</div>}
           {selectedChat && (
             <div className="ml-6">
+              {/* Title */}
               <h2 className="mx-auto text-2xl font-bold mb-4">
-                {selectedChat.title}
+                {selectedChat.title
+                  ? selectedChat.title
+                  : selectedChat.promptData.role +
+                    " at " +
+                    selectedChat.promptData.targetCompanies}
                 <PromptDisplay data={selectedChat.promptData} />
               </h2>
+
+              {/* Description */}
               <div className="mb-2">{selectedChat.textual}</div>
-              {/* <pre className=" p-2 rounded mb-2"> */}
-              {/* {JSON.stringify(selectedChat.promptData, null, 2)} */}
-              {/* </pre> */}
-              {/* Example: show flowchart if you want */}
+
+              {/* Flow diagram */}
               {selectedChat.flowjson?.pathwayData && (
-                <div className="h-100 w-100 relative">
+                <div className="h-100 w-100 absolute right-2 top-17">
+                  <h1 className="mb-2 text-center font-bold text-2xl">
+                    Flow Chart
+                  </h1>
                   <CareerFlowchart data={selectedChat.flowjson.pathwayData} />
-                  {/* <CareerFlowchart data={geminiData} /> */}
                 </div>
               )}
             </div>
