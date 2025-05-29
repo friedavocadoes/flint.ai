@@ -28,14 +28,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUser } from "@/hooks/useUser";
+import { useUserContext } from "@/context/userContext";
 
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
-  const { user, clearUser } = useUser();
+  const { user, clearUser } = useUserContext();
 
   return (
     <>
@@ -125,7 +125,7 @@ export default function Navbar() {
                 }}
               >
                 <LogIn />
-                Logged in
+                Log in
               </Button>
             </>
           ) : (
@@ -215,7 +215,7 @@ export function UserDropDown({
         >
           <LogOut />
           <span>Log out</span>
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

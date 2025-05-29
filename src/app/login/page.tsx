@@ -14,21 +14,73 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+
+import { useUserContext } from "@/context/userContext";
+import { Loader2 } from "lucide-react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null); // For breadcrumb message
+  const router = useRouter();
+  const { updateUser } = useUserContext();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setLoading(true);
+    setMessage(null); // Clear any previous messages
     const data = { email: email, password: password };
-    axios
-      .post(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/login`, data)
-      .then((res) => {
-        console.log(res);
+
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND}/api/auth/login`,
+        data
+      );
+
+      // Update user in localStorage and state using useUser hook
+      updateUser({
+        name: res.data.user.name,
+        email: res.data.user.email,
+        pro: res.data.user.pro,
+        id: res.data.user.id,
       });
+
+      setMessage("Login successful! Redirecting...");
+      setTimeout(() => {
+        router.push("/prepareAI");
+      }, 1000); // Redirect after 1 second
+    } catch (error: any) {
+      if (error.response) {
+        // Backend returned an error response
+        setMessage(`Error: ${error.response.data.message || "Unknown error"}`);
+      } else if (error.request) {
+        // Request was made but no response received
+        setMessage("Error: Backend unreachable. Please try again later.");
+      } else {
+        // Something else happened
+        setMessage(`Error: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <div className="flex justify-center mt-24 mb-10 ">
+    <div className="flex flex-col items-center mt-24 mb-10">
+      {/* Breadcrumb for success or error messages */}
+      {message && (
+        <div
+          className={`mb-4 px-4 py-2 rounded ${
+            message.startsWith("Login successful")
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {message}
+        </div>
+      )}
+
       <Card className="w-[350px] backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Log in</CardTitle>
@@ -76,12 +128,19 @@ export default function Auth() {
           </span>
         </CardContent>
         <CardFooter className="flex justify-start flex-col ">
-          <Button
-            className="self-start cursor-pointer hover:opacity-80 transition duration-200"
-            onClick={handleSubmit}
-          >
-            Log in
-          </Button>
+          {loading ? (
+            <Button disabled className="self-start">
+              <Loader2 className="animate-spin" />
+              Please wait
+            </Button>
+          ) : (
+            <Button
+              className="self-start cursor-pointer hover:opacity-80 transition duration-200"
+              onClick={handleSubmit}
+            >
+              Log in
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

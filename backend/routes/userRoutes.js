@@ -6,14 +6,25 @@ const router = express.Router();
 // Create a test user
 router.post("/signup", async (req, res) => {
   try {
-    const user = new User(req.body);
+    const { email, passwordHash, name } = req.body;
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already in use." });
+    }
+    // Hash password
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ email, passwordHash, name });
     await user.save();
     const pathway = new Pathway({ user: user.id, chats: [] });
     await pathway.save();
     await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
-    res.status(200).json(user);
+    res.status(201).json({
+      message: "User created successfully.",
+      user: { id: user.id, name: user.name, email: user.email, pro: user.pro },
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Signup failed. " + err.message });
   }
 });
 

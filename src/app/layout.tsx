@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { UserProvider } from "@/context/userContext";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -31,9 +32,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          {children}
-          <Footer />
+          <UserProvider>
+            <Navbar />
+            {children}
+            <Footer />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

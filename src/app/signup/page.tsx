@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUserContext } from "@/context/userContext";
 
 export default function Auth() {
   const [name, setName] = useState("");
@@ -24,6 +25,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null); // For breadcrumb message
   const router = useRouter();
+  const { updateUser } = useUserContext(); // Use the updateUser method from context
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -36,15 +38,16 @@ export default function Auth() {
         data
       );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: res.data.name,
-          email: res.data.email,
-          pro: res.data.pro,
-          _id: res.data._id,
-        })
-      );
+      console.log(res.data);
+
+      // Use updateUser to update the user state and localStorage
+      updateUser({
+        name: res.data.user.name,
+        email: res.data.user.email,
+        pro: res.data.user.pro,
+        id: res.data.user.id,
+      });
+
       setMessage("Signup successful! Redirecting...");
       setTimeout(() => {
         router.push("/prepareAI");

@@ -1,13 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
+"use client";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 
 interface User {
   name: string;
   email: string;
   pro: boolean;
-  _id: string;
+  id: string;
 }
 
-export function useUser() {
+interface UserContextType {
+  user: User | null;
+  updateUser: (newUser: User) => void;
+  clearUser: () => void;
+}
+
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
 
   // Load user from localStorage on mount
@@ -27,7 +44,6 @@ export function useUser() {
   const updateUser = useCallback((newUser: User) => {
     localStorage.setItem("user", JSON.stringify(newUser));
     setUser(newUser);
-    // Optionally, you can dispatch a custom event here if needed
   }, []);
 
   // Clear user from localStorage and state
@@ -36,5 +52,17 @@ export function useUser() {
     setUser(null);
   }, []);
 
-  return { user, updateUser, clearUser };
-}
+  return (
+    <UserContext.Provider value={{ user, updateUser, clearUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export const useUserContext = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider");
+  }
+  return context;
+};
