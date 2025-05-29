@@ -1,6 +1,11 @@
+"use client";
 import type { PathwayData } from "./types";
 import "reactflow/dist/style.css";
 import CareerFlowchart from "@/components/ui/flow-viewer";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const geminiData: PathwayData = {
   stages: [
@@ -83,12 +88,33 @@ const chats = [
 ];
 
 export default function PathwayPage() {
+  const [chats, setChats] = useState([]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const id = user?.id;
+    axios
+      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
+      .then((res) => {
+        console.log(res.data);
+        setChats(res.data.chats);
+      });
+  }, []);
   return (
-    <div className="flex flex-col p-4 pl-1 mt-12 mb-20">
-      <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1>
-      <div className="mx-auto h-100 w-100">
-        {/* <CareerFlowchart data={geminiData} /> */}
+    <>
+      <AppSidebar chats={chats} loading={false} />
+      <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer " />
+      <div className="flex flex-col p-4 pl-1 mt-12 mb-20">
+        <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1>
+        <div className="mx-auto h-100 w-100">
+          {/* <div>
+            {chats.map((chat) => (
+              <pre>{JSON.stringify(chat)}</pre>
+            ))}
+          </div> */}
+          {/* <CareerFlowchart data={geminiData} /> */}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

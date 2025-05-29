@@ -19,11 +19,12 @@ router.get("/pathways", async (req, res) => {
 });
 
 // Get all chats of a specific user
-router.get("/chats", async (req, res) => {
+router.get("/chats/:id", async (req, res) => {
   try {
-    const user = await User.findById(req.body.user).populate("pathways");
+    const id = req.params.id;
+    const user = await User.findById(id).populate("pathways");
 
-    console.log(user);
+    console.log(user.pathways);
     res.json(user.pathways);
   } catch (err) {
     res.status(500).json({ error: err.message });

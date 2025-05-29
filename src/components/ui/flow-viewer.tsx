@@ -53,7 +53,7 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
   useEffect(() => {
     // save to backend logic, on updte display a notif
     localStorage.setItem("flowchartData", JSON.stringify({ nodes, edges }));
-    console.log(nodes);
+    // console.log(nodes);
   }, [nodes, edges]);
 
   const onNodesChange = useCallback(

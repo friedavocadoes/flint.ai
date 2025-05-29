@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
-import { useState } from "react";
+// import { useState } from "react";
 
 // Menu items.
 const items = [
@@ -30,10 +30,24 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
-  const [loading, setLoading] = useState(false);
+export function AppSidebar({
+  chats,
+  loading,
+}: {
+  chats:
+    | [
+        {
+          _id: string;
+          title?: string;
+          promptData: { role: string; targetCompanies: string };
+        }
+      ]
+    | never[];
+  loading: boolean;
+}) {
+  // const [loading, setLoading] = useState(false);
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="mt-14 pb-14 fixed">
+    <Sidebar variant="sidebar" collapsible="icon" className="mt-14 pb-16 fixed">
       {/* <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -74,12 +88,18 @@ export function AppSidebar() {
                       <SidebarMenuSkeleton />
                     </SidebarMenuItem>
                   ))
-                : items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                : chats.map((chat) => (
+                    <SidebarMenuItem key={chat._id}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
+                        <a href={chat._id}>
+                          <ChartNetwork />
+                          <span>
+                            {chat.title
+                              ? chat.title
+                              : chat.promptData.role +
+                                " of " +
+                                chat.promptData.targetCompanies}
+                          </span>
                         </a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
