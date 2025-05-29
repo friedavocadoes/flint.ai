@@ -1,5 +1,6 @@
 "use client";
 import { CircleFadingArrowUp, Plus, ChartNetwork } from "lucide-react";
+import type { Chat } from "@/types/flow-viewer";
 
 import {
   Sidebar,
@@ -33,17 +34,11 @@ const items = [
 export function AppSidebar({
   chats,
   loading,
+  onChatSelect,
 }: {
-  chats:
-    | [
-        {
-          _id: string;
-          title?: string;
-          promptData: { role: string; targetCompanies: string };
-        }
-      ]
-    | never[];
+  chats: Chat[] | never[];
   loading: boolean;
+  onChatSelect?: (id: string) => void;
 }) {
   // const [loading, setLoading] = useState(false);
   return (
@@ -90,14 +85,17 @@ export function AppSidebar({
                   ))
                 : chats.map((chat) => (
                     <SidebarMenuItem key={chat._id}>
-                      <SidebarMenuButton asChild>
-                        <a href={chat._id}>
+                      <SidebarMenuButton
+                        asChild
+                        onClick={() => onChatSelect?.(chat._id)}
+                      >
+                        <a href="#">
                           <ChartNetwork />
                           <span>
                             {chat.title
                               ? chat.title
                               : chat.promptData.role +
-                                " of " +
+                                " at " +
                                 chat.promptData.targetCompanies}
                           </span>
                         </a>
