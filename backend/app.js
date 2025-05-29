@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import testRoutes from "./routes/testRoutes.js";
 import pathwayRoutes from "./routes/pathwayRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ mongoose
 
 app.use("/api", testRoutes);
 app.use("/api/pathway", pathwayRoutes);
+app.use("/api/auth", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

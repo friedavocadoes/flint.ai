@@ -1,27 +1,61 @@
 "use client";
-import React, { use } from "react";
 import Link from "next/link";
 import { ModeToggle } from "./ui/themeToggle";
 import { useState } from "react";
 import { HoveredLink, Menu, MenuItem, ProductItem } from "./ui/navbar-menu";
 import { usePathname } from "next/navigation";
+import { Button } from "./ui/button";
+import {
+  LogIn,
+  UserPlus,
+  Cloud,
+  CreditCard,
+  Github,
+  LifeBuoy,
+  LogOut,
+  Settings,
+  User,
+  CircleFadingArrowUp,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from "@/hooks/useUser";
 
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
+
+  const router = useRouter();
   const pathname = usePathname();
-  console.log(pathname);
+  const { user, clearUser } = useUser();
+
   return (
     <>
       <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
-        <div>
+        {/* left section */}
+        <div className="flex justify-center items-center">
           <Link href="/" className="font-bold text-2xl">
             Flint.ai{" "}
-            {pathname === "/prepareAI" && (
-              <span className="text-secondary cursor-default">/prepareAI</span>
-            )}
           </Link>
+          {pathname === "/prepareAI" && (
+            <div className="flex justify-center items-center">
+              <span className="font-bold text-2xl text-secondary cursor-default ml-1">
+                /prepareAI{" "}
+              </span>
+            </div>
+          )}
         </div>
-        <div className="mx-auto">
+
+        {/* center section */}
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Menu
             setActive={setActive}
             className="flex text-gray-400 space-x-3 md:space-x-6"
@@ -69,10 +103,121 @@ export default function Navbar() {
             </MenuItem>
           </Menu>
         </div>
-        <div>
+
+        {/* end section */}
+        <div className="ml-auto flex items-center">
+          {!user ? (
+            <>
+              <Button
+                className="mx-2 cursor-pointer hover:opacity-95"
+                onClick={() => {
+                  router.push("/signup");
+                }}
+              >
+                <UserPlus />
+                Sign Up
+              </Button>
+              <Button
+                className="mx-2 cursor-pointer hover:opacity-95"
+                variant="secondary"
+                onClick={() => {
+                  router.push("/login");
+                }}
+              >
+                <LogIn />
+                Logged in
+              </Button>
+            </>
+          ) : (
+            <div className="mx-2 cursor-pointer">
+              <UserDropDown
+                name={user.name}
+                email={user.email}
+                pro={user.pro}
+                onLogout={clearUser}
+              />
+            </div>
+          )}
+
           <ModeToggle />
         </div>
       </div>
     </>
+  );
+}
+
+export function UserDropDown({
+  name,
+  email,
+  pro,
+  onLogout,
+}: {
+  name: string;
+  email: string;
+  pro: boolean;
+  onLogout: () => void;
+}) {
+  const router = useRouter();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <User />
+          {name}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Email: {email}</DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <User />
+            <span>Profile</span>
+          </DropdownMenuItem>
+          {pro ? (
+            <DropdownMenuItem>
+              <CreditCard />
+              <span>Billing</span>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem>
+              <CircleFadingArrowUp />
+              <span>Upgrade to Pro</span>
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuItem>
+            <Settings />
+            <span>Settings</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Github />
+          <span>GitHub</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <LifeBuoy />
+          <span>Support</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled>
+          <Cloud />
+          <span>API</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            onLogout();
+            router.push("/login");
+          }}
+        >
+          <LogOut />
+          <span>Log out</span>
+          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

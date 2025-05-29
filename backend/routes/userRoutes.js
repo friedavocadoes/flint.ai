@@ -4,16 +4,40 @@ import Pathway from "../models/Pathway.js";
 const router = express.Router();
 
 // Create a test user
-router.post("/user", async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
     const user = new User(req.body);
     await user.save();
     const pathway = new Pathway({ user: user.id, chats: [] });
     await pathway.save();
     await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
-    res.json(user);
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Login logic
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email." });
+    }
+    // Compare password
+    // const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.passwordHash;
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+    res.status(200).json({
+      message: "Login successful.",
+      user: { id: user.id, email: user.email, name: user.name, pro: user.pro },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Login failed. " + err.message });
   }
 });
 
