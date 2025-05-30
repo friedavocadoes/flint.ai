@@ -89,7 +89,7 @@ export function AppSidebar({
                       <SidebarMenuSkeleton />
                     </SidebarMenuItem>
                   ))
-                : chats.map((chat) => (
+                : [...chats].reverse().map((chat) => (
                     <SidebarMenuItem key={chat._id}>
                       <SidebarMenuButton
                         asChild

@@ -10,3 +10,7 @@ npx shadcn@latest add sidebar
 npx shadcn@latest add card
 npx shadcn@latest add label
 npx shadcn@latest add select
+npm install react-markdown remark-gfm
+npm install @tailwindcss/typography
+npm i @uiw/react-markdown-preview
+

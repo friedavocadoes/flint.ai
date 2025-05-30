@@ -12,13 +12,13 @@ export async function POST(req) {
 
 Role aspiration: ${promptData.role}
 
+Target company/ies: ${promptData.targetCompanies}
+
 Expertise: ${promptData.expertise}
 
 Weak areas: ${promptData.weakAreas}
 
 Skill level: ${promptData.skillLevel}
-
-Target companies: ${promptData.targetCompanies}
 
 Time commitment: ${promptData.timeCommitment}
 
@@ -26,8 +26,8 @@ Extra remarks: ${promptData.extraRemarks}
 
 Generate a JSON response containing:
 
-1. A title for the career pathway (max 10 words).
-2. A textual description (formatted in markdown) giving the user realistic, step-by-step advice on what they should focus on to eventually become a CEO at Google, considering their current skillset and weaknesses. Include:
+1. A title for the career pathway (max 8 words).
+2. A textual description (formatted in markdown) giving the user realistic, step-by-step advice on what they should focus on to eventually become a what they have asked for, considering their current skillset and weaknesses. Include:
 
 Required skill improvements.
 
@@ -81,7 +81,7 @@ Make sure the JSON is structured as:
         }
     }
 }
-    Be honest in the advice: tell them if it's unrealistic to jump directly to CEO, suggest the best path, and break it down. Be detailed and practical, not just motivational fluff.”`;
+    Be honest in the advice: tell them if it's unrealistic to jump directly to, say, a CEO, suggest the best path, and break it down. Be detailed and practical, not just motivational fluff.”`;
 
   try {
     const response = await ai.models.generateContent({

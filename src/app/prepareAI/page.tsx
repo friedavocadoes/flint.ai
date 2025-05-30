@@ -1,5 +1,5 @@
 "use client";
-import type { PathwayData, Chat } from "./types";
+import type { Chat } from "./types";
 import "reactflow/dist/style.css";
 import CareerFlowchart from "@/components/ui/flow-viewer";
 import axios from "axios";
@@ -18,93 +18,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-
-const geminiData: PathwayData = {
-  stages: [
-    { id: "1", title: "Start: Learn DSA" },
-    { id: "2", title: "Practice LeetCode" },
-    { id: "3", title: "Build Projects" },
-    { id: "4", title: "Prepare for Interviews" },
-  ],
-  connections: [
-    { from: "1", to: "2" },
-    { from: "2", to: "3" },
-    { from: "3", to: "4" },
-  ],
-};
-
-const chats = [
-  {
-    id: 123,
-    title: "this is a heading",
-    textual: "hello",
-    flowjson: {
-      pathwayData: {
-        stages: [
-          { id: "1", title: "Start: Learn DSA" },
-          { id: "2", title: "Practice LeetCode" },
-          { id: "3", title: "Build Projects" },
-          { id: "4", title: "Prepare for Interviews" },
-        ],
-        connections: [
-          { from: "1", to: "2" },
-          { from: "2", to: "3" },
-          { from: "3", to: "4" },
-        ],
-      },
-      structData: {
-        nodes: [
-          {
-            id: "1748419778470",
-            data: { label: "New Node 1748419778470" },
-            position: { x: -138.88270248023053, y: -45.1158518623551 },
-            width: 150,
-            height: 57,
-            selected: false,
-            positionAbsolute: { x: -138.88270248023053, y: -45.1158518623551 },
-            dragging: false,
-          },
-          {
-            id: "1748423135019",
-            data: { label: "New Node 1748423135019" },
-            position: { x: -126.05452386052525, y: 54.78637402357066 },
-            width: 150,
-            height: 57,
-            selected: true,
-            positionAbsolute: { x: -126.05452386052525, y: 54.78637402357066 },
-            dragging: false,
-          },
-        ],
-        edges: [
-          {
-            source: "1748419778470",
-            sourceHandle: null,
-            target: "1748423135019",
-            targetHandle: null,
-            animated: true,
-            id: "reactflow__edge-1748419778470-1748423135019",
-          },
-        ],
-      },
-    },
-    promptData: {
-      role: "CEO",
-      targetCompanies: "Google, Microsoft",
-      expertise: "java, python, golang",
-      weakAreas: "dsa",
-      timeCommitment: "2 hours a day",
-      skillLevel: "2/10",
-      extraRemarks: "i want the easiest way to success",
-    },
-  },
-];
+import MarkdownViewer from "@/components/markDownViewer";
 
 export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
+    setLoading(true);
     const userString = localStorage.getItem("user");
     if (userString == null) router.push("/login");
     else {
@@ -114,6 +37,7 @@ export default function PathwayPage() {
         .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
         .then((res) => {
           setChats(res.data.chats);
+          setLoading(false);
         });
     }
   }, []);
@@ -124,7 +48,7 @@ export default function PathwayPage() {
     <>
       <AppSidebar
         chats={chats}
-        loading={false}
+        loading={loading}
         onChatSelect={setSelectedChatId}
         selectedChatId={selectedChatId}
       />
@@ -140,29 +64,47 @@ export default function PathwayPage() {
                 Create a new Pathway
               </h2>
               <div>
-                <PromptForm />
+                <PromptForm
+                  onChatCreated={async (newChatId: string) => {
+                    // Refetch chats
+                    const userString = localStorage.getItem("user");
+                    if (!userString) return;
+                    const user = JSON.parse(userString);
+                    const res = await axios.get(
+                      `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${user.id}`
+                    );
+                    setChats(res.data.chats);
+                    setSelectedChatId(newChatId);
+                  }}
+                />
               </div>
             </div>
           )}
 
           {selectedChat && (
             <div className="ml-6">
-              {/* Title */}
-              <h2 className="mx-auto text-2xl font-bold mb-4">
-                {selectedChat.title
-                  ? selectedChat.title
-                  : selectedChat.promptData.role +
-                    " at " +
-                    selectedChat.promptData.targetCompanies}
-                <PromptDisplay data={selectedChat.promptData} />
-              </h2>
+              <div className="w-1/2">
+                {/* Title */}
+                <h2 className="mx-auto text-2xl font-bold mb-4">
+                  {selectedChat.title
+                    ? selectedChat.title
+                    : selectedChat.promptData.role +
+                      " at " +
+                      selectedChat.promptData.targetCompanies}
+                  <PromptDisplay data={selectedChat.promptData} />
+                </h2>
 
-              {/* Description */}
-              <div className="mb-2">{selectedChat.textual}</div>
+                {/* Description */}
+                <div className="mb-2">
+                  {/* {selectedChat.textual} */}
+
+                  <MarkdownViewer content={selectedChat.textual} />
+                </div>
+              </div>
 
               {/* Flow diagram */}
               {selectedChat.flowjson?.pathwayData && (
-                <div className="h-100 w-100 absolute right-2 top-17">
+                <div className="h-3/4 w-1/3 fixed right-12 top-17">
                   <h1 className="mb-2 text-center font-bold text-2xl">
                     Flow Chart
                   </h1>
@@ -177,7 +119,12 @@ export default function PathwayPage() {
   );
 }
 
-export function PromptForm() {
+// form that is used to make a new chat
+export function PromptForm({
+  onChatCreated,
+}: {
+  onChatCreated?: (id: string) => void;
+}) {
   const [hours, setHours] = useState(4);
   const [skillLevel, setSkillLevel] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -195,14 +142,50 @@ export function PromptForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const callGeminiAPI = async (promptData: any) => {
+  const createChat = async (promptData: any) => {
     setLoading(true);
     try {
-      const res = await axios.post("/api/gemini", { promptData });
-      // handle response as needed
-      console.log(res.data);
-      if (res.data.error) {
-        alert(`AI service error. ${res.data.error.name}. Try again later`);
+      // 1. Get results from AI
+      const aiResponse = await axios.post("/api/gemini", { promptData });
+      console.log(aiResponse.data);
+      if (aiResponse.data.error) {
+        alert(
+          `AI service error. ${aiResponse.data.error.name}. Try again later`
+        );
+      } else {
+        // 2. Save promptData to backend (creates a new chat)
+        const loc = localStorage.getItem("user");
+        const userId = JSON.parse(loc).id;
+
+        const data = {
+          user: userId,
+          chat: {
+            promptData,
+          },
+        };
+
+        axios
+          .post(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chat`, data)
+          .then((res) => {
+            // console.log(res.data.chats[res.data.chats.length - 1]);
+            // 3. Save AI data to backend
+            const chatId = res.data.chats[res.data.chats.length - 1]._id;
+            console.log(chatId);
+            axios
+              .put(
+                `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chat/${chatId}`,
+                aiResponse.data
+              )
+              .then(() => {
+                // Notify parent to refetch and select this chat
+                if (onChatCreated) onChatCreated(chatId);
+              });
+          })
+          .catch(() => {
+            alert(
+              "failed to save promptData. (can be ignored if no further errors)"
+            );
+          });
       }
     } catch (err) {
       alert(`Call failed with error: ${err}. Try submitting again`);
@@ -218,7 +201,7 @@ export function PromptForm() {
       skillLevel: `${skillLevel.toString()} on 10`,
       timeCommitment: `${hours} hours a day`,
     };
-    callGeminiAPI(promptData);
+    createChat(promptData);
   };
 
   const formInfo = [
@@ -261,6 +244,7 @@ export function PromptForm() {
               className="mb-6 h-12"
               value={form[data.id as keyof typeof form]}
               onChange={handleChange}
+              required
             />
           </div>
         ))}
@@ -340,6 +324,7 @@ export function PromptForm() {
   );
 }
 
+// the i display for info about a chat
 export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
   const pData = [
     { name: "Role", inf: data.role },
@@ -362,7 +347,7 @@ export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
           <div className="space-y-1">
             <h4 className="text-lg font-bold mb-3">About this Pathway</h4>
             {pData.map((pd) => (
-              <p className="text-sm">
+              <p className="text-sm" key={pd.name}>
                 <span className="font-semibold">{pd.name}: </span> {pd.inf}
               </p>
             ))}
