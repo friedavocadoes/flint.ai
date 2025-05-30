@@ -7,13 +7,17 @@ import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
-import { Info, ListPlus } from "lucide-react";
+import { Info, ListPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 
 const geminiData: PathwayData = {
   stages: [
@@ -174,10 +178,165 @@ export default function PathwayPage() {
 }
 
 export function PromptForm() {
+  const [hours, setHours] = useState(4);
+  const [skillLevel, setSkillLevel] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    role: "",
+    targetCompanies: "",
+    expertise: "",
+    weakAreas: "",
+    extraRemarks: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const callGeminiAPI = async (promptData: any) => {
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/gemini", { promptData });
+      // handle response as needed
+      console.log(res.data);
+      if (res.data.error) {
+        alert(`AI service error. ${res.data.error.name}. Try again later`);
+      }
+    } catch (err) {
+      alert(`Call failed with error: ${err}. Try submitting again`);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const promptData = {
+      ...form,
+      skillLevel: `${skillLevel.toString()} on 10`,
+      timeCommitment: `${hours} hours a day`,
+    };
+    callGeminiAPI(promptData);
+  };
+
+  const formInfo = [
+    {
+      id: "role",
+      placeholder: "CEO, Software Engg 1",
+      text: "The role you are aiming for",
+    },
+    {
+      id: "targetCompanies",
+      placeholder: "Google, Microsoft, Meta",
+      text: "Target company/ies",
+    },
+    {
+      id: "expertise",
+      placeholder: "Java, Team management",
+      text: "Your most powerfull skills",
+    },
+    {
+      id: "weakAreas",
+      placeholder: "Time management, Vibe code",
+      text: "What are your weak areas?",
+    },
+  ];
+
   return (
-    <div>
-      <div></div>
-    </div>
+    <form className="flex flex-col mt-8" onSubmit={handleSubmit}>
+      {/* text inputs */}
+      <div className="grid grid-cols-2 space-y-3 space-x-10">
+        {formInfo.map((data) => (
+          <div className="space-y-2 w-70" key={data.id}>
+            <Label htmlFor={data.id} className="text-md">
+              {data.text}
+            </Label>
+            <Input
+              id={data.id}
+              name={data.id}
+              type="text"
+              placeholder={data.placeholder}
+              className="mb-6 h-12"
+              value={form[data.id as keyof typeof form]}
+              onChange={handleChange}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* skill level commitment */}
+      <div className="flex flex-col items-center mt-4 mb-10">
+        <div className="flex space-x-2 items-center w-full">
+          <p>0</p>
+          <Slider
+            defaultValue={[5]}
+            max={10}
+            step={1}
+            onValueChange={(e) => {
+              setSkillLevel(e[0]);
+            }}
+          />
+          <p>10</p>
+        </div>
+        <div>
+          Your skill level on a scale of 10:{" "}
+          <span className="font-bold">{skillLevel}</span>
+        </div>
+      </div>
+
+      {/* hours slider */}
+      <div className="flex flex-col items-center">
+        <div className="flex space-x-2 items-center w-full">
+          <p>0</p>
+          <Slider
+            defaultValue={[4]}
+            max={24}
+            step={1}
+            onValueChange={(e) => {
+              setHours(e[0]);
+            }}
+          />
+          <p>24</p>
+        </div>
+        <div>
+          Hours in a day you can dedicate:{" "}
+          <span className="font-bold">{hours}</span>
+        </div>
+      </div>
+
+      {/* remarks input */}
+      <div className="flex flex-col items-center mt-10">
+        <div className="space-y-2 w-full">
+          <Label
+            htmlFor="extraRemarks"
+            className="text-md text-center justify-center"
+          >
+            Any extra Notes for AI
+          </Label>
+          <Textarea
+            id="extraRemarks"
+            name="extraRemarks"
+            placeholder="No salt in my egg"
+            value={form.extraRemarks}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* submit button */}
+      <div className="mx-auto mt-6">
+        {loading ? (
+          <Button disabled>
+            <Loader2 className="animate-spin" />
+            Loading
+          </Button>
+        ) : (
+          <Button type="submit">Build a Roadmap with AI</Button>
+        )}
+      </div>
+    </form>
   );
 }
 
