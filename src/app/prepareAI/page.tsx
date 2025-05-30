@@ -6,6 +6,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 import { Info, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,16 +98,20 @@ const chats = [
 export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const id = user?.id;
-    axios
-      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
-      .then((res) => {
-        console.log(res.data);
-        setChats(res.data.chats);
-      });
+    const userString = localStorage.getItem("user");
+    if (userString == null) router.push("/login");
+    else {
+      const user: { id: string } | null = JSON.parse(userString);
+      const id = user?.id;
+      axios
+        .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
+        .then((res) => {
+          setChats(res.data.chats);
+        });
+    }
   }, []);
 
   const selectedChat = chats.find((chat) => chat._id === selectedChatId);
@@ -117,13 +122,25 @@ export default function PathwayPage() {
         chats={chats}
         loading={false}
         onChatSelect={setSelectedChatId}
+        selectedChatId={selectedChatId}
       />
       <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer " />
       <div className="flex flex-col p-4 pl-1 mt-12 mb-20">
         {/* <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1> */}
         <div className="mx-auto">
           {/* conditional display here */}
-          {!selectedChat && <div className="text-lg">hello</div>}
+          {!selectedChat && (
+            <div className="ml-6">
+              {/* Title */}
+              <h2 className="mx-auto text-2xl font-bold mb-4">
+                Create a new Pathway
+              </h2>
+              <div>
+                <PromptForm />
+              </div>
+            </div>
+          )}
+
           {selectedChat && (
             <div className="ml-6">
               {/* Title */}
@@ -150,18 +167,29 @@ export default function PathwayPage() {
               )}
             </div>
           )}
-          {/* <div>
-            {chats.map((chat) => (
-              <pre>{JSON.stringify(chat)}</pre>
-            ))}
-          </div> */}
         </div>
       </div>
     </>
   );
 }
 
+export function PromptForm() {
+  return (
+    <div>
+      <div></div>
+    </div>
+  );
+}
+
 export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
+  const pData = [
+    { name: "Role", inf: data.role },
+    { name: "Target Companies", inf: data.targetCompanies },
+    { name: "Expertise", inf: data.expertise },
+    { name: "Skill Level", inf: data.skillLevel },
+    { name: "Weak Ares", inf: data.weakAreas },
+    { name: "Time Commitment", inf: data.timeCommitment },
+  ];
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -174,34 +202,14 @@ export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
         <div className="flex justify-between space-x-4">
           <div className="space-y-1">
             <h4 className="text-lg font-bold mb-3">About this Pathway</h4>
-            <p className="text-sm">
-              <span className="font-semibold">Role: </span> {data.role}
-            </p>
-            <p className="text-sm">
-              <span className="font-semibold">Target Companies: </span>{" "}
-              {data.targetCompanies}
-            </p>
-            <p className="text-sm">
-              <span className="font-semibold">Expertise: </span>{" "}
-              {data.expertise}
-            </p>
-            <p className="text-sm">
-              <span className="font-semibold">Skill Level: </span>{" "}
-              {data.skillLevel}
-            </p>
-            <p className="text-sm">
-              <span className="font-semibold">Weak Areas: </span>{" "}
-              {data.weakAreas}
-            </p>
-            <p className="text-sm">
-              <span className="font-bold">Time Commitment: </span>{" "}
-              {data.timeCommitment}
-            </p>
-
+            {pData.map((pd) => (
+              <p className="text-sm">
+                <span className="font-semibold">{pd.name}: </span> {pd.inf}
+              </p>
+            ))}
             {data.extraRemarks && (
               <div className="flex items-center pt-2">
                 <ListPlus className="mr-2 h-4 w-4 opacity-70" />
-                {/* <CalendarDays className="mr-2 h-4 w-4 opacity-70" />{" "} */}
                 <span className="text-xs text-muted-foreground">
                   {data.extraRemarks}
                 </span>

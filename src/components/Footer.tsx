@@ -2,9 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
 
   const footerSections = [
     {
@@ -60,7 +62,11 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-gray-800/20">
+    <footer
+      className={`relative bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-gray-800/20 ${
+        pathname === "/prepareAI" && "hidden"
+      }`}
+    >
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Section */}

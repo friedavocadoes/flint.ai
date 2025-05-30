@@ -35,14 +35,20 @@ export function AppSidebar({
   chats,
   loading,
   onChatSelect,
+  selectedChatId,
 }: {
   chats: Chat[] | never[];
   loading: boolean;
   onChatSelect?: (id: string) => void;
+  selectedChatId?: string | null;
 }) {
   // const [loading, setLoading] = useState(false);
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="mt-14 pb-16 fixed">
+    <Sidebar
+      variant="sidebar"
+      collapsible="icon"
+      className="mt-14 z-2 pb-14 fixed"
+    >
       {/* <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -61,7 +67,7 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Add" className="mt-1 mb-2">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild onClick={() => onChatSelect?.("")}>
                   <a href="#">
                     <Plus />
                     <span>Plan a new career </span>
@@ -88,6 +94,10 @@ export function AppSidebar({
                       <SidebarMenuButton
                         asChild
                         onClick={() => onChatSelect?.(chat._id)}
+                        className={`${
+                          chat._id === selectedChatId &&
+                          "bg-stone-300 dark:bg-stone-600"
+                        }`}
                       >
                         <a href="#">
                           <ChartNetwork />
