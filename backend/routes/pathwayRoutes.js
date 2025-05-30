@@ -24,7 +24,7 @@ router.get("/chats/:id", async (req, res) => {
     const id = req.params.id;
     const user = await User.findById(id).populate("pathways");
 
-    console.log(user.pathways);
+    // console.log(user.pathways);
     res.json(user.pathways);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -44,6 +44,30 @@ router.post("/chat", async (req, res) => {
     );
 
     res.json(updatedPathway);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a chat by chat id
+router.delete("/chat/:id", async (req, res) => {
+  const chatId = req.params.id;
+  try {
+    // Find the pathway containing the chat and remove the chat from the chats array
+    const updatedPathway = await Pathway.findOneAndUpdate(
+      { "chats._id": chatId },
+      { $pull: { chats: { _id: chatId } } },
+      { new: true }
+    );
+
+    if (!updatedPathway) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    res.json({
+      message: "Chat deleted successfully.",
+      pathway: updatedPathway,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

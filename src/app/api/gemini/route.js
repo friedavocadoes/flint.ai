@@ -26,7 +26,7 @@ Extra remarks: ${promptData.extraRemarks}
 
 Generate a JSON response containing:
 
-1. A title for the career pathway (max 8 words).
+1. A title for the career pathway (max 5 words).
 2. A textual description (formatted in markdown) giving the user realistic, step-by-step advice on what they should focus on to eventually become a what they have asked for, considering their current skillset and weaknesses. Include:
 
 Required skill improvements.

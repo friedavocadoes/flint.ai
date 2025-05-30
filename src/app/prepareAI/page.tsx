@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
-import { Info, ListPlus, Loader2 } from "lucide-react";
+import { Info, ListPlus, Loader2, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import MarkdownViewer from "@/components/markDownViewer";
+import AlertDisplay from "@/components/alertDisplay";
 
 export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -27,7 +28,7 @@ export default function PathwayPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     const userString = localStorage.getItem("user");
     if (userString == null) router.push("/login");
     else {
@@ -85,12 +86,15 @@ export default function PathwayPage() {
             <div className="ml-6">
               <div className="w-1/2">
                 {/* Title */}
-                <h2 className="mx-auto text-2xl font-bold mb-4">
+                <h2 className="flex items-center mx-auto text-2xl font-bold mb-4">
                   {selectedChat.title
                     ? selectedChat.title
                     : selectedChat.promptData.role +
                       " at " +
                       selectedChat.promptData.targetCompanies}
+                  <div className="ml-2">
+                    <AlertDisplay />
+                  </div>
                   <PromptDisplay data={selectedChat.promptData} />
                 </h2>
 
@@ -331,7 +335,7 @@ export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
     { name: "Target Companies", inf: data.targetCompanies },
     { name: "Expertise", inf: data.expertise },
     { name: "Skill Level", inf: data.skillLevel },
-    { name: "Weak Ares", inf: data.weakAreas },
+    { name: "Weak Areas", inf: data.weakAreas },
     { name: "Time Commitment", inf: data.timeCommitment },
   ];
   return (
@@ -346,6 +350,7 @@ export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
         <div className="flex justify-between space-x-4">
           <div className="space-y-1">
             <h4 className="text-lg font-bold mb-3">About this Pathway</h4>
+
             {pData.map((pd) => (
               <p className="text-sm" key={pd.name}>
                 <span className="font-semibold">{pd.name}: </span> {pd.inf}
