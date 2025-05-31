@@ -107,14 +107,14 @@ export default function PathwayPage() {
                     : selectedChat.promptData.role +
                       " at " +
                       selectedChat.promptData.targetCompanies}
-                  <div className="ml-2">
+                  <PromptDisplay data={selectedChat.promptData} />
+                  <div className="mt-2">
                     {/* delete button */}
                     <AlertDisplay
                       id={selectedChat._id}
                       onDeleted={refreshChats}
                     />
                   </div>
-                  <PromptDisplay data={selectedChat.promptData} />
                 </h2>
 
                 {/* Description */}
@@ -359,7 +359,7 @@ export function PromptDisplay({ data }: { data: Chat["promptData"] }) {
   ];
   return (
     <HoverCard>
-      <HoverCardTrigger asChild>
+      <HoverCardTrigger asChild className="ml-1 mt-2">
         <Button variant="link">
           <Info />
           info

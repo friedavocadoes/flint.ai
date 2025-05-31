@@ -42,14 +42,16 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
   useEffect(() => {
     const saved = localStorage.getItem("flowchartData");
     if (!saved) {
-      const parsed = JSON.parse(saved);
-      setNodes(parsed.nodes || initialNodes);
-      setEdges(parsed.edges || initialEdges);
+      // const parsed = JSON.parse(saved);
+      // setNodes(parsed.nodes || initialNodes);
+      // setEdges(parsed.edges || initialEdges);
+      setNodes(initialNodes);
+      setEdges(initialEdges);
     } else {
       setNodes(initialNodes);
       setEdges(initialEdges);
     }
-  }, []);
+  }, [data]);
 
   // Save to localStorage on every change
   useEffect(() => {
