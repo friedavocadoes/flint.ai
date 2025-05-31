@@ -15,7 +15,6 @@ import {
   SidebarFooter,
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
-// import { useState } from "react";
 
 // Menu items.
 const items = [
@@ -43,6 +42,7 @@ export function AppSidebar({
   selectedChatId?: string | null;
 }) {
   // const [loading, setLoading] = useState(false);
+
   return (
     <Sidebar
       variant="sidebar"
@@ -86,7 +86,7 @@ export function AppSidebar({
               {loading
                 ? Array.from({ length: 5 }).map((_, index) => (
                     <SidebarMenuItem key={index}>
-                      <SidebarMenuSkeleton />
+                      <SidebarMenuSkeleton showIcon={true} />
                     </SidebarMenuItem>
                   ))
                 : [...chats].reverse().map((chat) => (

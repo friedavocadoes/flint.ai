@@ -26,23 +26,31 @@ export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // setLoading(true);
-    const userString = localStorage.getItem("user");
-    if (userString == null) router.push("/login");
-    else {
-      const user: { id: string } | null = JSON.parse(userString);
-      const id = user?.id;
-      axios
-        .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
-        .then((res) => {
-          setChats(res.data.chats);
-          setLoading(false);
-        });
-    }
+    setMounted(true); // Mark as mounted on client
   }, []);
+
+  useEffect(() => {
+    // Only fetch and set loading=false after mount
+    if (!mounted) return;
+    const userString = localStorage.getItem("user");
+    if (userString == null) {
+      router.push("/login");
+      return;
+    }
+
+    const user: { id: string } | null = JSON.parse(userString);
+    const id = user?.id;
+    axios
+      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
+      .then((res) => {
+        setChats(res.data.chats);
+        setLoading(false); // Only set loading false after mount
+      });
+  }, [mounted, router]);
 
   const refreshChats = async () => {
     const userString = localStorage.getItem("user");
@@ -99,7 +107,7 @@ export default function PathwayPage() {
 
           {selectedChat && (
             <div className="ml-6">
-              <div className="w-1/2">
+              <div className="w-3/5">
                 {/* Title */}
                 <h2 className="flex items-center mx-auto text-2xl font-bold mb-4">
                   {selectedChat.title
@@ -127,7 +135,7 @@ export default function PathwayPage() {
 
               {/* Flow diagram */}
               {selectedChat.flowjson?.pathwayData && (
-                <div className="h-3/4 w-1/3 fixed right-12 top-17">
+                <div className="h-3/4 w-1/4 fixed right-12 top-17">
                   <h1 className="mb-2 text-center font-bold text-2xl">
                     Flow Chart
                   </h1>

@@ -41,7 +41,7 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
   // Load from localStorage or fallback to initial
   useEffect(() => {
     const saved = localStorage.getItem("flowchartData");
-    if (!saved) {
+    if (saved) {
       // const parsed = JSON.parse(saved);
       // setNodes(parsed.nodes || initialNodes);
       // setEdges(parsed.edges || initialEdges);
