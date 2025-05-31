@@ -71,7 +71,15 @@ export default function HomePage() {
   );
 }
 
-export function FeatureCard({ icon, title, description }) {
+export function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: any;
+  title: string;
+  description: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
