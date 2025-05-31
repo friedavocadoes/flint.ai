@@ -8,27 +8,12 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
-
-// Menu items.
-const items = [
-  {
-    title: "Google job",
-    url: "#",
-    icon: ChartNetwork,
-  },
-  {
-    title: "Microsoft",
-    url: "#",
-    icon: ChartNetwork,
-  },
-];
 
 export function AppSidebar({
   chats,
@@ -49,18 +34,6 @@ export function AppSidebar({
       collapsible="icon"
       className="mt-14 z-2 pb-14 fixed"
     >
-      {/* <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href="#">
-                <CircleFadingArrowUp />
-                <span>Upgrade to pro</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader> */}
       <SidebarContent>
         <SidebarGroup>
           {/* add button starts */}

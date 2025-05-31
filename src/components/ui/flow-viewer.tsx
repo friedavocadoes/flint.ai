@@ -3,7 +3,6 @@
 import { PathwayData } from "@/types/flow-viewer";
 import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, {
-  MiniMap,
   Controls,
   Background,
   applyNodeChanges,
@@ -14,7 +13,7 @@ import ReactFlow, {
   Connection,
 } from "reactflow";
 import { Button } from "./button";
-import { Plus, PlusCircleIcon, Trash } from "lucide-react";
+import { PlusCircleIcon, Trash } from "lucide-react";
 
 export default function CareerFlowchart({ data }: { data: PathwayData }) {
   const nodeSpacingX = 100;

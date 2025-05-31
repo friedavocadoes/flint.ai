@@ -1,4 +1,4 @@
-import { Info, ListPlus, Loader2, Trash } from "lucide-react";
+import { Info, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,

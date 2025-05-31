@@ -73,8 +73,8 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-white">Flint.ai</h3>
             <p className="text-gray-400 text-sm max-w-xs">
-              AI Job Buddy — something that's part resume doctor, part career
-              guide, part community hub
+              AI Job Buddy — something that&apos;s part resume doctor, part
+              career guide, part community hub
             </p>
 
             {/* Social Media Icons */}

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Rocket, Layers, Brain, Globe } from "lucide-react";
+import { Rocket, Layers, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
@@ -58,9 +58,9 @@ export default function HomePage() {
             Built for Modern Hustlers
           </h2>
           <p className="text-slate-400 mb-6">
-            Whether you're a student, career switcher, or lifelong learner — our
-            tools adapt to you. Visualize your journey, break it into actionable
-            steps, and never lose track of your progress.
+            Whether you&apos;re a student, career switcher, or lifelong learner
+            — our tools adapt to you. Visualize your journey, break it into
+            actionable steps, and never lose track of your progress.
           </p>
           <Button className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl">
             Explore More
