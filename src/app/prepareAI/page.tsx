@@ -180,7 +180,7 @@ export function PromptForm({
       const aiResponse = await axios.post("/api/gemini", { promptData });
       console.log(aiResponse.data);
       if (aiResponse.data.error) {
-        toast(
+        toast.error(
           `AI service error. ${aiResponse.data.error.name}. Try again later`
         );
       } else {
@@ -213,13 +213,13 @@ export function PromptForm({
               });
           })
           .catch(() => {
-            toast(
+            toast.warning(
               "failed to save promptData. (can be ignored if no further errors)"
             );
           });
       }
     } catch (err) {
-      toast(`Call failed with error: ${err}. Try submitting again`);
+      toast.error(`Call failed with error: ${err}. Try submitting again`);
     }
     setLoading(false);
   };
@@ -328,12 +328,12 @@ export function PromptForm({
             htmlFor="extraRemarks"
             className="text-md text-center justify-center"
           >
-            Any extra Notes for AI
+            Provide additional context to AI
           </Label>
           <Textarea
             id="extraRemarks"
             name="extraRemarks"
-            placeholder="No salt in my egg"
+            placeholder="I'm currently in my 3rd year of CS at Caltech with very little experience..."
             value={form.extraRemarks}
             onChange={handleChange}
           />

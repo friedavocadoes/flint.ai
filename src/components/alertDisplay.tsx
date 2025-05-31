@@ -25,11 +25,11 @@ export default function AlertDisplay({
     axios
       .delete(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chat/${id}`)
       .then((res) => {
-        toast(res.data.message);
+        toast.success(res.data.message);
         if (onDeleted) onDeleted();
       })
       .catch((e) => {
-        alert(`error deleting chat: ${e}`);
+        toast.error(`error deleting chat: ${e}`);
       });
   };
 
