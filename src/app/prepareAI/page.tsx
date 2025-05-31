@@ -11,6 +11,7 @@ import MarkdownViewer from "@/components/markDownViewer";
 import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
 import { PromptDisplay } from "@/components/iDisplay"; // The i display thingy
+import { TriangleAlert } from "lucide-react";
 
 export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -77,44 +78,50 @@ export default function PathwayPage() {
             <h2 className="mx-auto text-2xl font-bold mb-4">
               Create a new Pathway
             </h2>
-            <div>
-              <PromptForm
-                onChatCreated={async (newChatId: string) => {
-                  // Refetch chats
-                  const userString = localStorage.getItem("user");
-                  if (!userString) return;
-                  const user = JSON.parse(userString);
-                  const res = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${user.id}`
-                  );
-                  setChats(res.data.chats);
-                  setSelectedChatId(newChatId);
-                }}
-              />
-            </div>
+
+            <PromptForm
+              onChatCreated={async (newChatId: string) => {
+                // Refetch chats
+                const userString = localStorage.getItem("user");
+                if (!userString) return;
+                const user = JSON.parse(userString);
+                const res = await axios.get(
+                  `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${user.id}`
+                );
+                setChats(res.data.chats);
+                setSelectedChatId(newChatId);
+              }}
+            />
           </div>
         ) : (
-          <div className="ml-6">
-            <div className="w-3/5">
+          <div className="ml-3 md:ml-6">
+            <div className="md:w-3/5">
               {/* Title */}
-              <h2 className="flex items-center mx-auto text-2xl font-bold mb-4">
-                {selectedChat.title
-                  ? selectedChat.title
-                  : selectedChat.promptData.role +
-                    " at " +
-                    selectedChat.promptData.targetCompanies}
-                <PromptDisplay data={selectedChat.promptData} />
-                <div className="mt-2">
-                  {/* delete button */}
-                  <AlertDisplay
-                    id={selectedChat._id}
-                    onDeleted={refreshChats}
-                  />
+              <h2 className="flex flex-col md:flex-row items-center mx-auto text-2xl font-bold mb-4">
+                {selectedChat.title}
+
+                <div className="flex self-start -ml-4 md:ml-0">
+                  <PromptDisplay data={selectedChat.promptData} />
+                  <div className="mt-2">
+                    {/* delete button */}
+                    <AlertDisplay
+                      id={selectedChat._id}
+                      onDeleted={refreshChats}
+                    />
+                  </div>
+                </div>
+
+                {/* display flow error on phones */}
+                <div className="md:hidden flex self-start items-center mt-2">
+                  <TriangleAlert className="w-4 text-amber-400" />
+                  <p className="text-xs font-mono text-amber-400 ml-2">
+                    Flow diagram not viewable on phone!
+                  </p>
                 </div>
               </h2>
 
               {/* Description */}
-              <div className="mb-2">
+              <div className="-ml-6 md:ml-0 mb-2">
                 {/* {selectedChat.textual} */}
 
                 <MarkdownViewer content={selectedChat.textual} />
@@ -123,7 +130,7 @@ export default function PathwayPage() {
 
             {/* Flow diagram */}
             {selectedChat.flowjson?.pathwayData && (
-              <div className="h-3/4 w-1/4 fixed right-12 top-17">
+              <div className="hidden md:block h-3/4 w-1/4 fixed right-12 top-17">
                 <h1 className="mb-2 text-center font-bold text-2xl">
                   Flow Chart
                 </h1>
