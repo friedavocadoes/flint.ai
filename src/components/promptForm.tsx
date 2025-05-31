@@ -119,11 +119,11 @@ export function PromptForm({
   ];
 
   return (
-    <form className="flex flex-col mt-8" onSubmit={handleSubmit}>
+    <form className="flex flex-col mt-8 max-w-2/3" onSubmit={handleSubmit}>
       {/* text inputs */}
       <div className="grid grid-cols-2 space-y-3 space-x-10">
         {formInfo.map((data) => (
-          <div className="space-y-2 w-70" key={data.id}>
+          <div className="space-y-2 " key={data.id}>
             <Label htmlFor={data.id} className="text-md">
               {data.text}
             </Label>
