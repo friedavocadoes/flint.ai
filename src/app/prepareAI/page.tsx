@@ -20,6 +20,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import MarkdownViewer from "@/components/markDownViewer";
 import AlertDisplay from "@/components/alertDisplay";
+import { toast } from "sonner";
 
 export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -42,6 +43,20 @@ export default function PathwayPage() {
         });
     }
   }, []);
+
+  const refreshChats = async () => {
+    const userString = localStorage.getItem("user");
+    if (!userString) return;
+    const user = JSON.parse(userString);
+    setLoading(true);
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${user.id}`
+    );
+    setChats(res.data.chats);
+    setLoading(false);
+    // Optionally, deselect the deleted chat
+    setSelectedChatId(null);
+  };
 
   const selectedChat = chats.find((chat) => chat._id === selectedChatId);
 
@@ -93,7 +108,11 @@ export default function PathwayPage() {
                       " at " +
                       selectedChat.promptData.targetCompanies}
                   <div className="ml-2">
-                    <AlertDisplay />
+                    {/* delete button */}
+                    <AlertDisplay
+                      id={selectedChat._id}
+                      onDeleted={refreshChats}
+                    />
                   </div>
                   <PromptDisplay data={selectedChat.promptData} />
                 </h2>
@@ -153,7 +172,7 @@ export function PromptForm({
       const aiResponse = await axios.post("/api/gemini", { promptData });
       console.log(aiResponse.data);
       if (aiResponse.data.error) {
-        alert(
+        toast(
           `AI service error. ${aiResponse.data.error.name}. Try again later`
         );
       } else {
@@ -186,13 +205,13 @@ export function PromptForm({
               });
           })
           .catch(() => {
-            alert(
+            toast(
               "failed to save promptData. (can be ignored if no further errors)"
             );
           });
       }
     } catch (err) {
-      alert(`Call failed with error: ${err}. Try submitting again`);
+      toast(`Call failed with error: ${err}. Try submitting again`);
     }
     setLoading(false);
   };

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { UserProvider } from "@/context/userContext";
+import { Toaster } from "sonner";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -35,6 +36,7 @@ export default function RootLayout({
           <UserProvider>
             <Navbar />
             {children}
+            <Toaster />
             <Footer />
           </UserProvider>
         </ThemeProvider>

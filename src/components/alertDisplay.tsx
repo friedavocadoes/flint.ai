@@ -11,13 +11,33 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
 
-export default function AlertDisplay({ id }: { id: string }) {
+export default function AlertDisplay({
+  id,
+  onDeleted,
+}: {
+  id: string;
+  onDeleted?: () => void;
+}) {
+  const handleDelete = async () => {
+    axios
+      .delete(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chat/${id}`)
+      .then((res) => {
+        toast(res.data.message);
+        if (onDeleted) onDeleted();
+      })
+      .catch((e) => {
+        alert(`error deleting chat: ${e}`);
+      });
+  };
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" className="cursor-pointer">
-          <Trash className="text-red-500 w-5 " />
+          <Trash className="text-red-700 w-5 " />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -35,7 +55,7 @@ export default function AlertDisplay({ id }: { id: string }) {
           <AlertDialogCancel className="cursor-pointer">
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction className="cursor-pointer">
+          <AlertDialogAction className="cursor-pointer" onClick={handleDelete}>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>
