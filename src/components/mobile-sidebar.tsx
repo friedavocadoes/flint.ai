@@ -40,9 +40,11 @@ import { usePathname } from "next/navigation";
 export function AppSidebar({
   loading,
   user,
+  routes,
 }: {
   loading: boolean;
   user: User | null;
+  routes: { loginRoute: string; signupRoute: string };
 }) {
   // const [loading, setLoading] = useState(false);
   const { clearUser } = useUserContext();
@@ -57,7 +59,7 @@ export function AppSidebar({
   return (
     <Sidebar
       variant="sidebar"
-      className="mt-14 z-2 pb-14 fixed md:hidden"
+      className="mt-14 z-2 pb-14 absolute md:hidden"
       side="right"
     >
       <SidebarContent>
@@ -89,13 +91,13 @@ export function AppSidebar({
             </SidebarMenu>
           ) : (
             <div className="space-x-2">
-              <Link href="/login">
+              <Link href={routes.loginRoute}>
                 <Button>
                   <LogIn />
                   Login
                 </Button>
               </Link>
-              <Link href="/signup">
+              <Link href={routes.signupRoute}>
                 <Button>
                   <UserPlus />
                   Sign Up

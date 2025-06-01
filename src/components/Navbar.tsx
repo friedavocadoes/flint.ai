@@ -31,6 +31,9 @@ import { useUserContext } from "@/context/userContext";
 import { SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./mobile-sidebar";
 
+const loginRoute = "/auth";
+const signupRoute = "/auth?tab=signup";
+
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
 
@@ -44,7 +47,11 @@ export default function Navbar() {
   ];
   return (
     <>
-      <AppSidebar loading={true} user={user} />
+      <AppSidebar
+        loading={true}
+        user={user}
+        routes={{ loginRoute, signupRoute }}
+      />
       <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
@@ -121,7 +128,7 @@ export default function Navbar() {
               <Button
                 className="mx-2 cursor-pointer hover:opacity-95"
                 onClick={() => {
-                  router.push("/signup");
+                  router.push(signupRoute);
                 }}
               >
                 <UserPlus />
@@ -131,7 +138,7 @@ export default function Navbar() {
                 className="mx-2 cursor-pointer hover:opacity-95"
                 variant="secondary"
                 onClick={() => {
-                  router.push("/login");
+                  router.push(loginRoute);
                 }}
               >
                 <LogIn />
@@ -153,7 +160,7 @@ export default function Navbar() {
         </div>
 
         {/* mobile hamburger */}
-        <div className="md:hidden flex ml-auto items-center">
+        <div className="md:hidden  flex ml-auto items-center">
           <SidebarTrigger hamburger={true} className="scale-130" />
         </div>
       </div>

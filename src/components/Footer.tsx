@@ -63,7 +63,7 @@ export default function Footer() {
 
   return (
     <footer
-      className={`relative bg-stone-200 dark:bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-stone-300 dark:border-gray-800/20 ${
+      className={` bg-stone-200 dark:bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-stone-300 dark:border-gray-800/20 ${
         pathname === "/prepareAI" && "hidden"
       }`}
     >

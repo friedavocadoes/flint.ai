@@ -7,7 +7,7 @@ import { FeatureCard } from "@/components/ui/featureCard";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6 px-20">
+    <main className=" min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6 px-20">
       <section className="max-w-7xl mx-auto py-20">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}

@@ -10,7 +10,7 @@ export function useProtectedRoute() {
   useEffect(() => {
     if (!user) {
         toast.warning("You must Log in before using");
-        router.replace("/login");
+        router.replace("/auth");
     }
   }, [user, router]);
 }
