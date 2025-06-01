@@ -6,6 +6,7 @@ import {
   LogOut,
   UserPlus,
   LogIn,
+  ChevronUp,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { ModeToggle } from "./ui/themeToggle";
 
 const tools = [
   { name: "prepareAI", href: "/prepareAI" },
@@ -69,56 +71,30 @@ export function AppSidebar({
   }, [pathname]);
 
   return (
-    <Sidebar
-      variant="sidebar"
-      className="mt-14 z-2 pb-14 absolute md:hidden"
-      side="right"
-    >
+    <Sidebar className="z-2 absolute md:hidden" side="right">
       <SidebarContent>
+        {/* Header */}
         <SidebarHeader className="mt-3 ml-2">
-          {user ? (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton>
-                      Hello, {user.name}
-                      <ChevronDown className="ml-auto" />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full" align="end">
-                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <User2 />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={clearUser}>
-                      <LogOut />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          ) : (
-            <div className="space-x-2">
-              <Link href={routes.loginRoute}>
-                <Button>
-                  <LogIn />
-                  Login
-                </Button>
-              </Link>
-              <Link href={routes.signupRoute}>
-                <Button>
-                  <UserPlus />
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
-          )}
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="#">
+                  <CircleFadingArrowUp />
+                  <span>Upgrade to pro</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <ModeToggle descriptive={true} />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarHeader>
+
         <SidebarSeparator />
+
+        {/* Tools List */}
         <SidebarGroup className="ml-2">
           <SidebarGroupLabel className="text-md">Tools</SidebarGroupLabel>
           <SidebarGroupContent className="ml-1">
@@ -135,6 +111,8 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Support List */}
         <SidebarGroup className="ml-2">
           <SidebarGroupLabel className="text-md">Support</SidebarGroupLabel>
           <SidebarGroupContent className="ml-1">
@@ -152,18 +130,48 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href="#">
-                <CircleFadingArrowUp />
-                <span>Upgrade to pro</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {user ? (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    Hello, {user.name}
+                    <ChevronUp className="ml-auto" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full" align="end">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User2 />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={clearUser}>
+                    <LogOut />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        ) : (
+          <div className="space-x-2">
+            <Link href={routes.loginRoute}>
+              <Button>
+                <LogIn />
+                Login
+              </Button>
+            </Link>
+            <Link href={routes.signupRoute}>
+              <Button>
+                <UserPlus />
+                Sign Up
+              </Button>
+            </Link>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
