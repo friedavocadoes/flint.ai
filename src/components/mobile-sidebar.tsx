@@ -20,6 +20,7 @@ import {
   SidebarMenuSkeleton,
   SidebarHeader,
   useSidebar,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 
 import {
@@ -37,12 +38,23 @@ import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+const tools = [
+  { name: "prepareAI", href: "/prepareAI" },
+  { name: "resumeAI", href: "/resume" },
+  { name: "Discussions", href: "/discussions" },
+];
+const support = [
+  { name: "Contact Us", href: "#" },
+  { name: "Raise an Issue", href: "#" },
+  { name: "Documentation", href: "#" },
+];
+
 export function AppSidebar({
   loading,
   user,
   routes,
 }: {
-  loading: boolean;
+  loading?: boolean;
   user: User | null;
   routes: { loginRoute: string; signupRoute: string };
 }) {
@@ -106,11 +118,37 @@ export function AppSidebar({
             </div>
           )}
         </SidebarHeader>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu></SidebarMenu>
+        <SidebarSeparator />
+        <SidebarGroup className="ml-2">
+          <SidebarGroupLabel className="text-md">Tools</SidebarGroupLabel>
+          <SidebarGroupContent className="ml-1">
+            <SidebarMenu>
+              {tools.map((tool) => (
+                <SidebarMenuItem key={tool.name}>
+                  <SidebarMenuButton asChild>
+                    <a href={tool.href}>
+                      <span>{tool.name}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup className="ml-2">
+          <SidebarGroupLabel className="text-md">Support</SidebarGroupLabel>
+          <SidebarGroupContent className="ml-1">
+            <SidebarMenu>
+              {support.map((tool) => (
+                <SidebarMenuItem key={tool.name}>
+                  <SidebarMenuButton asChild>
+                    <a href={tool.href}>
+                      <span>{tool.name}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

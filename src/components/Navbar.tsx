@@ -47,11 +47,7 @@ export default function Navbar() {
   ];
   return (
     <>
-      <AppSidebar
-        loading={true}
-        user={user}
-        routes={{ loginRoute, signupRoute }}
-      />
+      <AppSidebar user={user} routes={{ loginRoute, signupRoute }} />
       <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
