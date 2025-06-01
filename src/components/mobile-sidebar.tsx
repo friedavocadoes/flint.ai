@@ -108,19 +108,9 @@ export function AppSidebar({
         </SidebarHeader>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Recent Pathway creations</SidebarGroupLabel>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuSkeleton showIcon={true} />
-                  </SidebarMenuItem>
-                ))
-              ) : (
-                <div>meh</div>
-              )}
-            </SidebarMenu>
+            <SidebarMenu></SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
