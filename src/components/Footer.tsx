@@ -63,7 +63,7 @@ export default function Footer() {
 
   return (
     <footer
-      className={`relative bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-gray-800/20 ${
+      className={`relative bg-stone-200 dark:bg-[#0c0c0d] py-16 px-10 md:px-40 border-t border-stone-300 dark:border-gray-800/20 ${
         pathname === "/prepareAI" && "hidden"
       }`}
     >
@@ -71,8 +71,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Section */}
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white">Flint.ai</h3>
-            <p className="text-gray-400 text-sm max-w-xs">
+            <h3 className="text-xl font-semibold text-black dark:text-white">
+              Flint.ai
+            </h3>
+            <p className="text-stone-700 dark:text-gray-400 text-sm max-w-xs">
               AI Job Buddy — something that&apos;s part resume doctor, part
               career guide, part community hub
             </p>
@@ -85,7 +87,7 @@ export default function Footer() {
                   href={link.href}
                   aria-label={link.ariaLabel}
                   target="blank"
-                  className="w-8 h-8 flex items-center justify-center border border-gray-700 rounded-full text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center border border-gray-700 rounded-full text-stone-700 dark:text-gray-400 hover:text-black dark:hover:text-white dark:hover:border-gray-500 transition-colors"
                 >
                   <SocialIcon name={link.icon} />
                 </a>
@@ -96,7 +98,7 @@ export default function Footer() {
           {/* Site Links */}
           {footerSections.map((section) => (
             <div key={section.title} className="space-y-4">
-              <h4 className="text-sm font-medium text-gray-500">
+              <h4 className="text-sm font-medium text-black dark:text-gray-500">
                 {section.title}
               </h4>
               <ul className="space-y-2">
@@ -104,7 +106,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-stone-700 dark:text-gray-400 hover:text-blue-800 dark:hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -116,12 +118,12 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-gray-500">
+            <h4 className="text-sm font-medium text-stone-700 dark:text-gray-500">
               Feel free to reach out to us.
             </h4>
             <a
               href="mailto:help@flint.ai"
-              className="text-blue-400 hover:text-blue-300 flex items-center space-x-2 transition-colors"
+              className="text-indigo-700 dark:text-blue-400 hover:text-blue-300 flex items-center space-x-2 transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -14,24 +14,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-
 import { useUserContext } from "@/context/userContext";
 import { Loader2 } from "lucide-react";
+import { useUserExists } from "@/hooks/protectedRoute";
+import { toast } from "sonner";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null); // For breadcrumb message
-  const router = useRouter();
   const { updateUser } = useUserContext();
+  useUserExists();
 
   const handleSubmit = async () => {
     setLoading(true);
-    setMessage(null); // Clear any previous messages
     const data = { email: email, password: password };
-
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND}/api/auth/login`,
@@ -46,20 +43,17 @@ export default function Auth() {
         id: res.data.user.id,
       });
 
-      setMessage("Login successful! Redirecting...");
-      setTimeout(() => {
-        router.push("/prepareAI");
-      }, 1000); // Redirect after 1 second
+      toast.success(`Welcome back, ${res.data.user.name}`);
     } catch (error: any) {
       if (error.response) {
         // Backend returned an error response
-        setMessage(`Error: ${error.response.data.message || "Unknown error"}`);
+        toast.error(`${error.response.data.message || "Unknown error"}`);
       } else if (error.request) {
         // Request was made but no response received
-        setMessage("Error: Backend unreachable. Please try again later.");
+        toast.error("Backend unreachable. Please try again later.");
       } else {
         // Something else happened
-        setMessage(`Error: ${error.message}`);
+        toast.error(`${error.message}`);
       }
     } finally {
       setLoading(false);
@@ -68,19 +62,6 @@ export default function Auth() {
 
   return (
     <div className="flex flex-col items-center mt-24 mb-10">
-      {/* Breadcrumb for success or error messages */}
-      {message && (
-        <div
-          className={`mb-4 px-4 py-2 rounded ${
-            message.startsWith("Login successful")
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {message}
-        </div>
-      )}
-
       <Card className="w-[350px] backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Log in</CardTitle>

@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { UserProvider } from "@/context/userContext";
 import { Toaster } from "sonner";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -27,19 +28,21 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={` ${outfit.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <UserProvider>
-            <Navbar />
-            {children}
-            <Toaster richColors />
-            <Footer />
-          </UserProvider>
-        </ThemeProvider>
+        <UserProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider className="flex flex-col">
+              <Navbar />
+              {children}
+              <Toaster richColors />
+              <Footer />
+            </SidebarProvider>
+          </ThemeProvider>
+        </UserProvider>
       </body>
     </html>
   );

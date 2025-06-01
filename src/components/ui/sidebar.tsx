@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
+import { Menu, PanelLeftIcon } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -256,8 +256,9 @@ function Sidebar({
 function SidebarTrigger({
   className,
   onClick,
+  hamburger,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & { hamburger?: boolean }) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -273,7 +274,8 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      {hamburger ? <Menu /> : <PanelLeftIcon />}
+
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

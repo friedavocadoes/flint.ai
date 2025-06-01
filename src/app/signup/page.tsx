@@ -17,8 +17,10 @@ import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/context/userContext";
+import { useUserExists } from "@/hooks/protectedRoute";
 
 export default function Auth() {
+  useUserExists();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -6,13 +6,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-
-interface User {
-  name: string;
-  email: string;
-  pro: boolean;
-  id: string;
-}
+import type { User } from "@/types/user";
 
 interface UserContextType {
   user: User | null;

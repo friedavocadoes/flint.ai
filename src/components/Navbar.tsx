@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserContext } from "@/context/userContext";
+import { SidebarTrigger } from "./ui/sidebar";
+import { AppSidebar } from "./mobile-sidebar";
 
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
@@ -36,25 +38,34 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, clearUser } = useUserContext();
 
+  const paths = [
+    { p: "/prepareAI", name: "/prepareAI" },
+    { p: "/resume", name: "/resumeAI" },
+  ];
   return (
     <>
+      <AppSidebar loading={true} user={user} />
       <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center ">
           <Link href="/" className="font-bold text-2xl">
             Flint.ai{" "}
           </Link>
-          {pathname === "/prepareAI" && (
-            <div className="flex justify-center items-center">
-              <span className="font-bold text-2xl text-secondary cursor-default ml-1">
-                /prepareAI{" "}
-              </span>
-            </div>
+
+          {paths.map(
+            (path) =>
+              pathname === path.p && (
+                <div className="flex justify-center items-center" key={path.p}>
+                  <span className="font-bold text-2xl text-gray-300 dark:text-neutral-700 cursor-default ml-1">
+                    {path.name}{" "}
+                  </span>
+                </div>
+              )
           )}
         </div>
 
         {/* center section */}
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
           <Menu
             setActive={setActive}
             className="flex text-gray-400 space-x-3 md:space-x-6"
@@ -104,7 +115,7 @@ export default function Navbar() {
         </div>
 
         {/* end section */}
-        <div className="ml-auto flex items-center">
+        <div className="hidden ml-auto md:flex items-center">
           {!user ? (
             <>
               <Button
@@ -139,6 +150,11 @@ export default function Navbar() {
           )}
 
           <ModeToggle />
+        </div>
+
+        {/* mobile hamburger */}
+        <div className="md:hidden flex ml-auto items-center">
+          <SidebarTrigger hamburger={true} className="scale-130" />
         </div>
       </div>
     </>

@@ -1,10 +1,11 @@
 "use client";
 import type { Chat } from "./types";
+import { useProtectedRoute } from "@/hooks/protectedRoute";
 import "reactflow/dist/style.css";
 import CareerFlowchart from "@/components/ui/flow-viewer";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/chat-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import MarkdownViewer from "@/components/markDownViewer";
@@ -12,36 +13,27 @@ import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
 import { PromptDisplay } from "@/components/iDisplay"; // The i display thingy
 import { TriangleAlert } from "lucide-react";
+import { useUserContext } from "@/context/userContext";
 
 export default function PathwayPage() {
+  useProtectedRoute();
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { user } = useUserContext();
 
   useEffect(() => {
-    setMounted(true); // Mark as mounted on client
-  }, []);
-
-  useEffect(() => {
-    // Only fetch and set loading=false after mount
-    if (!mounted) return;
-    const userString = localStorage.getItem("user");
-    if (userString == null) {
-      router.push("/login");
-      return;
+    if (user) {
+      const id = user.id;
+      axios
+        .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
+        .then((res) => {
+          setChats(res.data.chats);
+          setLoading(false);
+        });
     }
-
-    const user: { id: string } | null = JSON.parse(userString);
-    const id = user?.id;
-    axios
-      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
-      .then((res) => {
-        setChats(res.data.chats);
-        setLoading(false); // Only set loading false after mount
-      });
-  }, [mounted, router]);
+  }, [router]);
 
   const refreshChats = async () => {
     const userString = localStorage.getItem("user");
@@ -53,7 +45,7 @@ export default function PathwayPage() {
     );
     setChats(res.data.chats);
     setLoading(false);
-    // Optionally, deselect the deleted chat
+
     setSelectedChatId(null);
   };
 
@@ -69,8 +61,6 @@ export default function PathwayPage() {
       />
       <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer " />
       <div className="flex flex-col p-4 pl-1 mt-12 mb-20 w-full">
-        {/* <h1 className="mx-auto text-2xl font-bold mb-4">Your Career Pathway</h1> */}
-        {/* <div className="mx-auto"> */}
         {/* conditional display here */}
         {!selectedChat ? (
           <div className="ml-6">
@@ -139,7 +129,6 @@ export default function PathwayPage() {
             )}
           </div>
         )}
-        {/* </div> */}
       </div>
     </>
   );
