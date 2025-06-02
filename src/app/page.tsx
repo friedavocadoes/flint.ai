@@ -1,73 +1,59 @@
 "use client";
-import React from "react";
 import { Button } from "@/components/ui/button";
-import { Rocket, Layers, Brain } from "lucide-react";
-import { motion } from "framer-motion";
-import { FeatureCard } from "@/components/ui/featureCard";
+import { ShaderGradientCanvas, ShaderGradient } from "@shadergradient/react";
+import { motion } from "motion/react";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className=" min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-6 px-20">
-      <section className="max-w-7xl mx-auto py-20">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400"
-        >
-          Craft Your Career Journey
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-lg max-w-2xl mb-8 text-slate-300"
-        >
-          We help you visualize, plan, and conquer your career path with
-          interactive tools, custom strategies, and smart insights — tailored
-          just for you.
-        </motion.p>
-        <Button className="px-8 py-4 text-lg bg-slate-700 hover:bg-slate-600 rounded-2xl shadow-xl">
-          Get Started
-        </Button>
-      </section>
-
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto py-16">
-        <FeatureCard
-          icon={<Rocket size={32} />}
-          title="Fast-track Growth"
-          description="Skip the fluff. We focus on what accelerates your skills and lands you real opportunities."
-        />
-        <FeatureCard
-          icon={<Layers size={32} />}
-          title="Structured Pathways"
-          description="Clear, modular career pathways designed for every level — from newbie to pro."
-        />
-        <FeatureCard
-          icon={<Brain size={32} />}
-          title="AI-Powered Insights"
-          description="Get smart recommendations and tailored roadmaps built on your unique profile and goals."
-        />
-      </section>
-
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="max-w-6xl mx-auto py-20"
+    <>
+      <ShaderGradientCanvas
+        style={{
+          position: "absolute",
+          zIndex: 0,
+          // inset: 0,
+        }}
+        pointerEvents="none"
+        lazyLoad
       >
-        <div className="rounded-3xl bg-slate-800/50 backdrop-blur p-10 shadow-2xl">
-          <h2 className="text-3xl font-bold mb-4 text-slate-200">
-            Built for Modern Hustlers
-          </h2>
-          <p className="text-slate-400 mb-6">
-            Whether you&apos;re a student, career switcher, or lifelong learner
-            — our tools adapt to you. Visualize your journey, break it into
-            actionable steps, and never lose track of your progress.
+        <ShaderGradient
+          control="query"
+          cDistance={4.4}
+          grain="off"
+          // urlString="https://www.shadergradient.co/customize?animate=on&axesHelper=off&bgColor1=%23000000&bgColor2=%23000000&brightness=1.1&cAzimuthAngle=180&cDistance=6&cPolarAngle=90&cameraZoom=1&color1=%232d0000&color2=%2317425f&color3=%23d0bce1&destination=onCanvas&embedMode=off&envPreset=city&format=gif&fov=10&frameRate=60&gizmoHelper=hide&grain=off&lightType=3d&pixelDensity=1.4&positionX=1.1&positionY=0.2&positionZ=0&range=enabled&rangeEnd=40&rangeStart=0&reflection=0.1&rotationX=0&rotationY=-10&rotationZ=60&shader=defaults&toggleAxis=true&type=waterPlane&uAmplitude=0&uDensity=0.8&uFrequency=5.5&uSpeed=0.2&uStrength=1.8&uTime=0&wireframe=false"
+          urlString="https://www.shadergradient.co/customize?animate=on&axesHelper=off&bgColor1=%23000000&bgColor2=%23000000&brightness=1.5&cAzimuthAngle=180&cDistance=1.1&cPolarAngle=90&cameraZoom=1&color1=%232d0000&color2=%2317425f&color3=%23d0bce1&destination=onCanvas&embedMode=off&envPreset=city&format=gif&fov=40&frameRate=10&gizmoHelper=hide&grain=off&lightType=3d&pixelDensity=2.4&positionX=1.1&positionY=0.2&positionZ=0&range=enabled&rangeEnd=40&rangeStart=0&reflection=0.1&rotationX=0&rotationY=-10&rotationZ=60&shader=defaults&toggleAxis=true&type=waterPlane&uAmplitude=0&uDensity=4.6&uFrequency=5.5&uSpeed=0.2&uStrength=1.1&uTime=0&wireframe=false"
+        />
+      </ShaderGradientCanvas>
+      <div className="flex flex-col z-2">
+        {/* <motion.div className="top-2/5 left-1/2 -translate-x-1/2 z-5 "> */}
+        <motion.div
+          className="mx-auto mt-60 mb-10 flex flex-col px-4"
+          style={{
+            background:
+              "linear-gradient(120deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            WebkitTextFillColor: "transparent",
+            // backdropFilter: "blur(8px)",
+            textShadow: "0 2px 16px rgba(255,255,255,0.25)",
+          }}
+        >
+          <h1 className="font-bold text-6xl text-center pb-5">
+            Craft your Career Journey
+          </h1>
+          <p className="text-center font-semibold">
+            This is a test description. Everything is plastic
           </p>
-          <Button className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl">
-            Explore More
+          <Button
+            variant="outline"
+            className="cursor-pointer mx-auto mt-16 font-bold  group-hover:text-stone-300"
+          >
+            <Link href="/auth?tab=signup">Get Started</Link>
           </Button>
-        </div>
-      </motion.section>
-    </main>
+        </motion.div>
+        <div className="h-50 md:h-30"></div>
+      </div>
+    </>
   );
 }

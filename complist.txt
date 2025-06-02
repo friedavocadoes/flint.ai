@@ -14,3 +14,5 @@ npm install react-markdown remark-gfm
 npm install @tailwindcss/typography
 npm i @uiw/react-markdown-preview
 
+npm i three @react-three/fiber @react-spring/three @shadergradient/react
+npm i -D @types/three

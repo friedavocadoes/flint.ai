@@ -48,11 +48,23 @@ export default function Navbar() {
   return (
     <>
       <AppSidebar user={user} routes={{ loginRoute, signupRoute }} />
-      <div className="fixed w-full top-0 h-14 bg-background/40 border-b border-foregorund flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
+      <div className="fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
-          <Link href="/" className="font-bold text-2xl">
-            Flint.ai{" "}
+          <Link
+            href="/"
+            // className="font-bold text-2xl"
+          >
+            <p
+              className="font-bold text-2xl bg-gradient-to-tr 
+              dark:from-white/70 dark:to-white/20 dark:hover:text-stone-300
+              from-black/70 to-black/20 hover:text-stone-800
+              bg-clip-text text-transparent drop-shadow-[0_2px_16px_rgba(255,255,255,0.25)]
+              transition-all duration-400 ease-in-out
+              "
+            >
+              Flint.ai
+            </p>
           </Link>
 
           {paths.map(
@@ -69,12 +81,9 @@ export default function Navbar() {
 
         {/* center section */}
         <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
-          <Menu
-            setActive={setActive}
-            className="flex text-gray-400 space-x-3 md:space-x-6"
-          >
+          <Menu setActive={setActive} className="flex space-x-3 md:space-x-6">
             <MenuItem setActive={setActive} active={active} item="Tools">
-              <div className="  text-sm grid grid-cols-2 gap-10 p-4">
+              <div className=" text-stone-400 text-sm grid grid-cols-2 gap-10 p-4">
                 <ProductItem
                   title="Resume Analyser"
                   href="/resume"
@@ -228,7 +237,7 @@ export function UserDropDown({
         <DropdownMenuItem
           onClick={() => {
             onLogout();
-            router.push("/login");
+            router.push("/auth");
           }}
         >
           <LogOut />
