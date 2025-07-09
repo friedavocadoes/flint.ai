@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { SpinningText } from "../magicui/spinning-text";
 
 const transition = {
   type: "spring",
@@ -28,7 +29,7 @@ export const MenuItem = ({
     <div onMouseEnter={() => setActive(item)} className="relative ">
       <motion.p
         transition={{ duration: 0.3 }}
-        className="cursor-pointer text-black hover:opacity-[0.9] dark:text-stone-300"
+        className="cursor-pointer font-semibold text-black hover:opacity-[0.8] dark:text-stone-400"
       >
         {item}
       </motion.p>
@@ -36,14 +37,14 @@ export const MenuItem = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={transition}
+          // transition={transition}
         >
           {active === item && (
             <div className="absolute top-[calc(100%_+_1.2rem)] left-1/2 transform -translate-x-1/2 pt-0">
               <motion.div
-                transition={transition}
+                // transition={transition}
                 layoutId="active" // layoutId ensures smooth animation
-                className="bg-background backdrop-blur-sm rounded-2xl overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
+                className="bg-muted/95 backdrop-blur-md rounded-2xl overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
               >
                 <motion.div
                   layout // layout ensures smooth animation
@@ -87,30 +88,49 @@ export const ProductItem = ({
   description,
   href,
   src,
+  isComingSoon,
 }: {
   title: string;
   description: string;
   href: string;
   src: string;
+  isComingSoon?: boolean;
 }) => {
+  const Wrapper = isComingSoon ? "div" : "a";
   return (
-    <a href={href} className="flex space-x-2">
-      <Image
-        src={src}
-        width={140}
-        height={70}
-        alt={title}
-        className="shrink-0 rounded-md shadow-2xl"
-      />
+    <Wrapper
+      href={isComingSoon ? undefined : href}
+      className={cn(
+        "flex space-x-2 relative group",
+        isComingSoon && "pointer-events-none opacity-60"
+      )}
+    >
+      <div className="relative">
+        <Image
+          src={src}
+          width={140}
+          height={70}
+          alt={title}
+          className={cn(
+            "shrink-0 rounded-md shadow-2xl transition-all",
+            isComingSoon && "grayscale"
+          )}
+        />
+        {isComingSoon && (
+          <span className="absolute w-[90%] top-[50%] -translate-y-1/2 left-1/2 -translate-x-1/2 bg-yellow-600/80 rounded-sm text-md font-bold px-2 py-4 text-center text-foreground z-10">
+            Coming Soon
+          </span>
+        )}
+      </div>
       <div>
-        <h4 className="text-xl font-bold mb-1 text-black dark:text-stone-300">
+        <h4 className="text-xl font-bold mb-1 text-foreground group-hover:text-green-700 transition duration-200 ">
           {title}
         </h4>
-        <p className="text-neutral-700 text-sm max-w-[10rem] dark:text-stone-400">
+        <p className="text-fgtext text-sm max-w-[10rem] group-hover:text-green-800 transition duration-200 ">
           {description}
         </p>
       </div>
-    </a>
+    </Wrapper>
   );
 };
 

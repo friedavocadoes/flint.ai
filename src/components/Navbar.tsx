@@ -89,6 +89,7 @@ export default function Navbar() {
                   href="/resume"
                   src="/thumbs/resume.jpg"
                   description="Analyze and score your Resume with AI to bust through the ATS'"
+                  isComingSoon={true}
                 />
                 <ProductItem
                   title="Prepare with Flint"
@@ -101,12 +102,14 @@ export default function Navbar() {
                   href="#"
                   src="/thumbs/interview.jpg"
                   description="Prepare yourself with sample interviews created with AI"
+                  isComingSoon={true}
                 />
                 <ProductItem
                   title="Discussions"
                   href="#"
                   src="/thumbs/discussions.jpg"
                   description="Engage in curiosity driven discussions."
+                  isComingSoon={true}
                 />
               </div>
             </MenuItem>
@@ -208,20 +211,20 @@ export function UserDropDown({
               <span>Billing</span>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem>
+            <DropdownMenuItem disabled>
               <CircleFadingArrowUp />
               <span>Upgrade to Pro</span>
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem>
+          <DropdownMenuItem disabled>
             <Settings />
             <span>Settings</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem disabled>
           <Github />
           <span>GitHub</span>
         </DropdownMenuItem>
