@@ -1,0 +1,64 @@
+{
+  "user": "68383eedc32acb27e30d95c9",
+  "razorpayOrderId": "pay_QrRaRNGlKzVJ8j",
+  "razorpayPaymentId": "order_QrRaIaC5oHMuuQ",
+  "status": "paid",
+  "amount": 9900,
+  "source": "ppc",
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "pay_QrRaRNGlKzVJ8j",
+        "entity": "payment",
+        "amount": 9900,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "order_QrRaIaC5oHMuuQ",
+        "invoice_id": null,
+        "international": false,
+        "method": "upi",
+        "amount_refunded": 0,
+        "refund_status": null,
+        "captured": true,
+        "description": "Pay per chat",
+        "card_id": null,
+        "bank": null,
+        "wallet": null,
+        "vpa": "9207757005@ptsbi",
+        "email": "a@a.com",
+        "contact": "+919207757005",
+        "notes": { "id": "68383eedc32acb27e30d95c9", "paymentType": "ppc" },
+        "fee": 234,
+        "tax": 36,
+        "error_code": null,
+        "error_description": null,
+        "error_source": null,
+        "error_step": null,
+        "error_reason": null,
+        "acquirer_data": {
+          "rrn": "478246162258",
+          "upi_transaction_id": "0E98A3E8F340BF5634622EDFB2293828"
+        },
+        "created_at": 1752167829,
+        "reward": null,
+        "upi": { "vpa": "9207757005@ptsbi" }
+      }
+    },
+    "order": {
+      "entity": {
+        "id": "order_QrRaIaC5oHMuuQ",
+        "entity": "order",
+        "amount": 9900,
+        "amount_paid": 9900,
+        "amount_due": 0,
+        "currency": "INR",
+        "receipt": "receipt_order_s0168n",
+        "offer_id": null,
+        "status": "paid",
+        "attempts": 1,
+        "notes": { "id": "68383eedc32acb27e30d95c9", "paymentType": "ppc" },
+        "created_at": 1752167821
+      }
+    }
+  }
+}
