@@ -44,6 +44,7 @@ export default function Navbar() {
   const paths = [
     { p: "/prepareAI", name: "/prepareAI" },
     { p: "/resume", name: "/resumeAI" },
+    { p: "/profile", name: "/me" },
   ];
   return (
     <>
@@ -164,6 +165,7 @@ export default function Navbar() {
             </div>
           )}
 
+          {/* theme toggle */}
           <ModeToggle />
         </div>
 
@@ -201,7 +203,11 @@ export function UserDropDown({
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              router.push("/profile");
+            }}
+          >
             <User />
             <span>Profile</span>
           </DropdownMenuItem>

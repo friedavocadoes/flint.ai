@@ -6,6 +6,19 @@ import { toast } from "sonner";
 import { InteractiveHoverButton } from "./magicui/interactive-hover-button";
 import { Ban, Banknote } from "lucide-react";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+interface RazorpayPaymentResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+  [key: string]: any;
+}
+
 export default function PayButton({
   paymentType = "ppc",
   amount,
@@ -42,7 +55,7 @@ export default function PayButton({
       name: "Flint.ai",
       description: desc,
       order_id: orderId,
-      handler: function (response) {
+      handler: function (response: RazorpayPaymentResponse) {
         toast.success(`Payment of ${amount}`);
         onSuccess?.(response);
       },

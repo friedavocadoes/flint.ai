@@ -32,4 +32,6 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
+// [admin] View all payments
+
 export default router;
