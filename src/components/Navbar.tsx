@@ -45,6 +45,7 @@ export default function Navbar() {
     { p: "/prepareAI", name: "/prepareAI" },
     { p: "/resume", name: "/resumeAI" },
     { p: "/profile", name: "/me" },
+    { p: "/subscribe", name: "/upgrade" },
   ];
   return (
     <>
@@ -118,7 +119,7 @@ export default function Navbar() {
               <div className="flex flex-col space-y-4 text-sm">
                 <ProductItem
                   title="Go premium"
-                  href="#"
+                  href="/subscribe"
                   src="/thumbs/pro.jpg"
                   description="Solo • Team • Business"
                 />
@@ -159,6 +160,7 @@ export default function Navbar() {
               <UserDropDown
                 name={user.name}
                 email={user.email}
+                pro={user?.pro}
                 onLogout={clearUser}
               />
             </div>
@@ -180,11 +182,13 @@ export default function Navbar() {
 export function UserDropDown({
   name,
   email,
+  pro,
 
   onLogout,
 }: {
   name: string;
   email: string;
+  pro: boolean | undefined;
 
   onLogout: () => void;
 }) {
@@ -210,22 +214,21 @@ export function UserDropDown({
             <User />
             <span>Profile</span>
           </DropdownMenuItem>
-          {/* {pro ? (
+          {pro ? (
             <DropdownMenuItem>
               <CreditCard />
               <span>Billing</span>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push("/subscribe");
+              }}
+            >
               <CircleFadingArrowUp />
               <span>Upgrade to Pro</span>
             </DropdownMenuItem>
-          )} */}
-
-          <DropdownMenuItem disabled>
-            <Settings />
-            <span>Settings</span>
-          </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />

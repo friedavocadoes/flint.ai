@@ -20,12 +20,12 @@ interface RazorpayPaymentResponse {
 }
 
 export default function PayButton({
-  paymentType = "ppc",
+  paymentType = "other",
   amount,
   onSuccess,
   onFailure,
 }: {
-  paymentType?: "ppc" | "sub" | "other";
+  paymentType?: "ppc" | "solo" | "enterprise" | "other";
   amount: number;
   onSuccess?: (response: any) => void;
   onFailure?: (error: any) => void;
@@ -37,7 +37,7 @@ export default function PayButton({
   const handlePayment = async () => {
     setLoading(true);
     const res = await fetch(
-      "http://localhost:5000/api/razorpayMain/create-order",
+      `${process.env.NEXT_PUBLIC_BACKEND}/api/razorpayMain/create-order`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -67,10 +67,10 @@ export default function Profile() {
                 </div>
               ))}
             </CardContent>
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-end align-bottom text-left">
               <Link
                 href="/hello"
-                className="px-3 py-2 font-semibold hover:underline hover:text-blue-600 transition duration-100"
+                className="px-3 py-2 font-semibold hover:underline hover:text-blue-600 transition duration-100 text-left"
               >
                 Edit details
               </Link>

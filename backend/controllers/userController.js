@@ -27,7 +27,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("subscriptionRef");
     if (!user) {
       return res.status(401).json({ error: "Invalid email." });
     }
@@ -38,7 +38,12 @@ export const login = async (req, res) => {
     }
     res.status(200).json({
       message: "Login successful.",
-      user: { id: user.id, email: user.email, name: user.name, pro: user.pro },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        pro: user.subscriptionRef.status === "active",
+      },
     });
   } catch (err) {
     res.status(500).json({ error: "Login failed. " + err.message });

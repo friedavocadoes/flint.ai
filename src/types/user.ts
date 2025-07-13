@@ -103,6 +103,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  pro?: boolean | undefined;
   passwordHash?: string;
   payments?: Payment[];
   createdAt?: string;

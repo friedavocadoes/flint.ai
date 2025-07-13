@@ -1,6 +1,7 @@
 import express from "express";
 import Razorpay from "razorpay";
 import dotenv from "dotenv";
+import Payment from "../models/Payment.js";
 dotenv.config();
 
 const router = express.Router();
@@ -33,5 +34,13 @@ router.post("/create-order", async (req, res) => {
 });
 
 // [admin] View all payments
+router.get("/payments", async (req, res) => {
+  try {
+    const payments = await Payment.find();
+    res.json({ payments });
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
 
 export default router;
