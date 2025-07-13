@@ -18,6 +18,7 @@ import roles from "@/content/roles.json";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 
 export default function Hello() {
   const { setMeInfo } = useUserInfo();
@@ -25,6 +26,7 @@ export default function Hello() {
   const [role, setRole] = useState("");
   const [sex, setSex] = useState<"Male" | "Female" | "Other" | null>(null);
   const [age, setAge] = useState(0);
+  const router = useRouter();
 
   const handleSubmit = () => {
     if (nationality === "" || role === "" || sex === null || age === 0) {
@@ -34,19 +36,20 @@ export default function Hello() {
 
     const data = { age, role, nationality, sex };
     setMeInfo(data);
+    router.push("/profile");
   };
 
   return (
     <>
-      <Card className="mt-20 mb-10 mx-40">
+      <Card className="mt-20 mb-10 mx-auto p-6 max-w-200">
         <CardHeader className="text-center ">
           <CardTitle className="mx-auto">Welcome to Flint.ai</CardTitle>
           <CardDescription className="font-semibold mx-auto">
             We require some basic information to be able to set up your account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="mx-auto flex-1 flex items-center justify-center mt-6">
-          <div className="grid grid-cols-2 grid-rows-2 gap-10">
+        <CardContent className="mx-auto flex-1 flex flex-col items-center justify-center mt-6">
+          <div className="grid md:grid-cols-2 md:grid-rows-2 gap-6 md:gap-10">
             <div>
               <Label className="mb-2 ml-2 text-stone-500 font-semibold">
                 Nationality
@@ -65,6 +68,19 @@ export default function Hello() {
                 dataArray={roles}
                 dataName="role"
                 setterFunc={setRole}
+              />
+            </div>
+
+            <div>
+              <Label className="mb-2 ml-2 text-stone-500 font-semibold">
+                Age
+              </Label>
+              <Input
+                type="number"
+                value={age}
+                onChange={(e) => {
+                  setAge(Number(e.target.value));
+                }}
               />
             </div>
             <div>
@@ -90,20 +106,11 @@ export default function Hello() {
                 </div>
               </RadioGroup>
             </div>
-            <div>
-              <Label className="mb-2 ml-2 text-stone-500 font-semibold">
-                Age
-              </Label>
-              <Input
-                type="number"
-                value={age}
-                onChange={(e) => {
-                  setAge(Number(e.target.value));
-                }}
-              />
-            </div>
           </div>
-          <Button className="cursor-pointer justify-end" onClick={handleSubmit}>
+          <Button
+            className="cursor-pointer justify-end mt-10 hover:opacity-45"
+            onClick={handleSubmit}
+          >
             Submit
           </Button>
         </CardContent>

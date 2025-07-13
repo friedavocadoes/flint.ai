@@ -11,6 +11,7 @@ import {
 import { useUserInfo } from "@/hooks/useUserInfo";
 import PaymentTable, { PaymentTableLoader } from "@/components/paymentTable";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export default function Profile() {
   const { userInfo, loading } = useUserInfo();
@@ -51,7 +52,7 @@ export default function Profile() {
           </Card>
 
           {/* Bio and details */}
-          <Card className="md:col-span-3 md:row-span-1">
+          <Card className="md:col-span-3 md:row-span-1 flex flex-col h-full">
             <CardHeader>
               <CardTitle className="text-xl">Bio</CardTitle>
               <CardDescription>Details</CardDescription>
@@ -66,6 +67,14 @@ export default function Profile() {
                 </div>
               ))}
             </CardContent>
+            <CardFooter className="justify-end">
+              <Link
+                href="/hello"
+                className="px-3 py-2 font-semibold hover:underline hover:text-blue-600 transition duration-100"
+              >
+                Edit details
+              </Link>
+            </CardFooter>
           </Card>
 
           {/* Premium and billing */}
