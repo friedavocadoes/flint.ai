@@ -49,6 +49,12 @@ const chatSchema = new mongoose.Schema(
     textual: String, // gemini updated
     flowjson: flowJsonSchema, // frontend updates
     promptData: promptDataSchema,
+    chatType: {
+      type: String,
+      enum: ["ppc", "sub", "free"],
+      default: "free",
+    },
+    isLocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

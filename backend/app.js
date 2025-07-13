@@ -5,11 +5,20 @@ import dotenv from "dotenv";
 import testRoutes from "./routes/testRoutes.js";
 import pathwayRoutes from "./routes/pathwayRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import razorpayWebhook from "./webhooks/razorpayWebhook.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
+
+app.use(
+  "/api/razorpay",
+  express.raw({ type: "application/json" }),
+  razorpayWebhook
+);
+
 app.use(express.json());
 
 mongoose
@@ -20,6 +29,7 @@ mongoose
 app.use("/api", testRoutes);
 app.use("/api/pathway", pathwayRoutes);
 app.use("/api/auth", userRoutes);
+app.use("/api/razorpayMain", paymentRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

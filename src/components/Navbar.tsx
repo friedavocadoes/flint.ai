@@ -44,6 +44,8 @@ export default function Navbar() {
   const paths = [
     { p: "/prepareAI", name: "/prepareAI" },
     { p: "/resume", name: "/resumeAI" },
+    { p: "/profile", name: "/me" },
+    { p: "/subscribe", name: "/upgrade" },
   ];
   return (
     <>
@@ -117,7 +119,7 @@ export default function Navbar() {
               <div className="flex flex-col space-y-4 text-sm">
                 <ProductItem
                   title="Go premium"
-                  href="#"
+                  href="/subscribe"
                   src="/thumbs/pro.jpg"
                   description="Solo • Team • Business"
                 />
@@ -158,12 +160,13 @@ export default function Navbar() {
               <UserDropDown
                 name={user.name}
                 email={user.email}
-                pro={user.pro}
+                pro={user?.pro}
                 onLogout={clearUser}
               />
             </div>
           )}
 
+          {/* theme toggle */}
           <ModeToggle />
         </div>
 
@@ -180,11 +183,13 @@ export function UserDropDown({
   name,
   email,
   pro,
+
   onLogout,
 }: {
   name: string;
   email: string;
-  pro: boolean;
+  pro: boolean | undefined;
+
   onLogout: () => void;
 }) {
   const router = useRouter();
@@ -201,7 +206,11 @@ export function UserDropDown({
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              router.push("/profile");
+            }}
+          >
             <User />
             <span>Profile</span>
           </DropdownMenuItem>
@@ -211,16 +220,15 @@ export function UserDropDown({
               <span>Billing</span>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push("/subscribe");
+              }}
+            >
               <CircleFadingArrowUp />
               <span>Upgrade to Pro</span>
             </DropdownMenuItem>
           )}
-
-          <DropdownMenuItem disabled>
-            <Settings />
-            <span>Settings</span>
-          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />

@@ -44,13 +44,13 @@ export default function Signup() {
       updateUser({
         name: res.data.user.name,
         email: res.data.user.email,
-        pro: res.data.user.pro,
+        // pro: res.data.user.pro,
         id: res.data.user.id,
       });
 
       toast.success("Signup successful! Redirecting...");
       setTimeout(() => {
-        router.push("/prepareAI");
+        router.push("/hello");
       }, 1000);
     } catch (error: any) {
       if (error.response) {

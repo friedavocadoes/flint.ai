@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "backend of flint",
   "main": "app.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "test": "node app.js",
     "dev": "nodemon app.js"
@@ -21,9 +21,11 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.15.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "razorpay": "^2.9.6"
   }
 }
