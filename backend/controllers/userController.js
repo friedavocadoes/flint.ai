@@ -45,7 +45,38 @@ export const login = async (req, res) => {
   }
 };
 
-// Get all users controller
+export const setMeInfo = async (req, res) => {
+  try {
+    const { age, role, sex, nationality, id } = req.body;
+
+    await User.findByIdAndUpdate(id, {
+      age,
+      role,
+      nationality,
+      sex,
+    });
+
+    res.status(200).json({ message: "success" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to set user info. " + err.message });
+  }
+};
+
+export const getMeInfo = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const user = await User.findById(id)
+      .populate("subscriptionRef")
+      .populate("payments");
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to set user info. " + err.message });
+  }
+};
+
+// [admin] Get all users controller
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();

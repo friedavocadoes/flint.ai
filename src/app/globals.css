@@ -53,7 +53,7 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
-  --fgtext: oklch(18.22% 0.00002 271.152);
+  --fgtext: oklch(19.574% 0.00002 271.152);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.147 0.004 49.25);
   --popover: oklch(1 0 0);
@@ -96,7 +96,7 @@
   --sidebar-ring: 217.2 91.2% 59.8%;
   --background: oklch(0.147 0.004 49.25);
   --foreground: oklch(0.985 0.001 106.423);
-  --fgtext: oklch(24.354% 0.00003 271.152);
+  --fgtext: oklch(54.863% 0.00006 271.152);
   --card: oklch(0.216 0.006 56.043);
   --card-foreground: oklch(0.985 0.001 106.423);
   --popover: oklch(0.216 0.006 56.043);

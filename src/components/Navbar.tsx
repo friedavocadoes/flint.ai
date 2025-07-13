@@ -159,7 +159,6 @@ export default function Navbar() {
               <UserDropDown
                 name={user.name}
                 email={user.email}
-                pro={user.pro}
                 onLogout={clearUser}
               />
             </div>
@@ -181,12 +180,12 @@ export default function Navbar() {
 export function UserDropDown({
   name,
   email,
-  pro,
+
   onLogout,
 }: {
   name: string;
   email: string;
-  pro: boolean;
+
   onLogout: () => void;
 }) {
   const router = useRouter();
@@ -211,7 +210,7 @@ export function UserDropDown({
             <User />
             <span>Profile</span>
           </DropdownMenuItem>
-          {pro ? (
+          {/* {pro ? (
             <DropdownMenuItem>
               <CreditCard />
               <span>Billing</span>
@@ -221,7 +220,7 @@ export function UserDropDown({
               <CircleFadingArrowUp />
               <span>Upgrade to Pro</span>
             </DropdownMenuItem>
-          )}
+          )} */}
 
           <DropdownMenuItem disabled>
             <Settings />

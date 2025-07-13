@@ -39,8 +39,8 @@ router.post("/webhook", async (req, res) => {
 
       const payment = new Payment({
         user: data.payload.payment.entity.notes.id,
-        razorpayOrderId: data.payload.payment.entity.id,
-        razorpayPaymentId: data.payload.payment.entity.order_id,
+        razorpayPaymentId: data.payload.payment.entity.id,
+        razorpayOrderId: data.payload.payment.entity.order_id,
         status: data.payload.order.entity.status,
         amount: data.payload.payment.entity.amount,
         source: data.payload.payment.entity.notes.paymentType,
