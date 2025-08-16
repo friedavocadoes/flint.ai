@@ -85,8 +85,8 @@ export interface Subscription {
   user: string; // or User if populated
   type: "solo" | "enterprise" | "ppc" | "free";
   status: "active" | "inactive";
-  startDate: string; // ISO date string
-  endDate?: string; // ISO date string or undefined
+  startDate: string;
+  endDate?: string;
   activeChatCredits: number;
   createdAt: string;
   updatedAt: string;

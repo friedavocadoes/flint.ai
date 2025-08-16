@@ -14,6 +14,7 @@ import {
   SidebarFooter,
   SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
+import routes from "@/content/routes";
 
 export function AppSidebar({
   chats,
@@ -94,7 +95,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href="#">
+              <a href={routes.sub}>
                 <CircleFadingArrowUp />
                 <span>Upgrade to pro</span>
               </a>

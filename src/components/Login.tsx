@@ -35,7 +35,6 @@ export default function Login() {
         data
       );
 
-      // Update user in localStorage and state using useUser hook
       updateUser({
         name: res.data.user.name,
         email: res.data.user.email,
@@ -46,13 +45,10 @@ export default function Login() {
       toast.success(`Welcome back, ${res.data.user.name}`);
     } catch (error: any) {
       if (error.response) {
-        // Backend returned an error response
         toast.error(`${error.response.data.message || "Unknown error"}`);
       } else if (error.request) {
-        // Request was made but no response received
         toast.error("Backend unreachable. Please try again later.");
       } else {
-        // Something else happened
         toast.error(`${error.message}`);
       }
     } finally {

@@ -80,8 +80,9 @@ export function PromptForm({
       }
     } catch (err) {
       toast.error(`Call failed with error: ${err}. Try submitting again`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

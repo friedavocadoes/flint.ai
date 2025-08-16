@@ -30,9 +30,7 @@ import {
 import { useUserContext } from "@/context/userContext";
 import { SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./mobile-sidebar";
-
-const loginRoute = "/auth";
-const signupRoute = "/auth?tab=signup";
+import routes from "@/content/routes";
 
 export default function Navbar() {
   const [active, setActive] = useState<string | null>(null);
@@ -42,14 +40,21 @@ export default function Navbar() {
   const { user, clearUser } = useUserContext();
 
   const paths = [
-    { p: "/prepareAI", name: "/prepareAI" },
-    { p: "/resume", name: "/resumeAI" },
-    { p: "/profile", name: "/me" },
-    { p: "/subscribe", name: "/upgrade" },
+    { p: routes.prepare, name: "/prepareAI" },
+    { p: routes.resume, name: "/resumeAI" },
+    { p: routes.profile, name: "/me" },
+    { p: routes.sub, name: "/upgrade" },
   ];
+
   return (
     <>
-      <AppSidebar user={user} routes={{ loginRoute, signupRoute }} />
+      <AppSidebar
+        user={user}
+        routes={{
+          loginRoute: routes.auth.loginRoute,
+          signupRoute: routes.auth.signupRoute,
+        }}
+      />
       <div className="fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
@@ -88,27 +93,27 @@ export default function Navbar() {
               <div className=" text-stone-400 text-sm grid grid-cols-2 gap-10 p-4">
                 <ProductItem
                   title="Resume Analyser"
-                  href="/resume"
+                  href={routes.resume}
                   src="/thumbs/resume.jpg"
                   description="Analyze and score your Resume with AI to bust through the ATS'"
                   isComingSoon={true}
                 />
                 <ProductItem
                   title="Prepare with Flint"
-                  href="/prepareAI"
+                  href={routes.prepare}
                   src="/thumbs/prep.jpeg"
                   description="Create a career roadmap and land your dream job."
                 />
                 <ProductItem
                   title="Mock Interviews"
-                  href="#"
+                  href={routes.mockInterviews}
                   src="/thumbs/interview.jpg"
                   description="Prepare yourself with sample interviews created with AI"
                   isComingSoon={true}
                 />
                 <ProductItem
                   title="Discussions"
-                  href="#"
+                  href={routes.discussions}
                   src="/thumbs/discussions.jpg"
                   description="Engage in curiosity driven discussions."
                   isComingSoon={true}
@@ -119,13 +124,19 @@ export default function Navbar() {
               <div className="flex flex-col space-y-4 text-sm">
                 <ProductItem
                   title="Go premium"
-                  href="/subscribe"
+                  href={routes.sub}
                   src="/thumbs/pro.jpg"
                   description="Solo • Team • Business"
                 />
-                <HoveredLink href="#">Contact us</HoveredLink>
-                <HoveredLink href="#">Raise an Issue</HoveredLink>
-                <HoveredLink href="#">Documentation</HoveredLink>
+                <HoveredLink href={routes.static.contact}>
+                  Contact us
+                </HoveredLink>
+                <HoveredLink href={routes.static.issue}>
+                  Raise an Issue
+                </HoveredLink>
+                <HoveredLink href={routes.static.documentation}>
+                  Documentation
+                </HoveredLink>
               </div>
             </MenuItem>
           </Menu>
@@ -138,7 +149,7 @@ export default function Navbar() {
               <Button
                 className="mx-2 cursor-pointer hover:opacity-95"
                 onClick={() => {
-                  router.push(signupRoute);
+                  router.push(routes.auth.signupRoute);
                 }}
               >
                 <UserPlus />
@@ -148,7 +159,7 @@ export default function Navbar() {
                 className="mx-2 cursor-pointer hover:opacity-95"
                 variant="secondary"
                 onClick={() => {
-                  router.push(loginRoute);
+                  router.push(routes.auth.loginRoute);
                 }}
               >
                 <LogIn />
@@ -208,7 +219,7 @@ export function UserDropDown({
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {
-              router.push("/profile");
+              router.push(routes.profile);
             }}
           >
             <User />
@@ -222,7 +233,7 @@ export function UserDropDown({
           ) : (
             <DropdownMenuItem
               onClick={() => {
-                router.push("/subscribe");
+                router.push(routes.sub);
               }}
             >
               <CircleFadingArrowUp />
@@ -248,12 +259,11 @@ export function UserDropDown({
         <DropdownMenuItem
           onClick={() => {
             onLogout();
-            router.push("/auth");
+            router.push(routes.auth.loginRoute);
           }}
         >
           <LogOut />
           <span>Log out</span>
-          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

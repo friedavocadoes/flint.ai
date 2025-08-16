@@ -19,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import routes from "@/content/routes";
 
 export default function Hello() {
   const { setMeInfo } = useUserInfo();
@@ -36,7 +37,7 @@ export default function Hello() {
 
     const data = { age, role, nationality, sex };
     setMeInfo(data);
-    router.push("/profile");
+    router.push(routes.profile);
   };
 
   return (
