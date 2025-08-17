@@ -22,6 +22,15 @@ export default function PathwayPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { user } = useUserContext();
+  const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
+
+  // Update chat if chat id
+  useEffect(() => {
+    if (selectedChatId) {
+      const currentChat = chats.find((chat) => chat._id === selectedChatId);
+      setSelectedChat(currentChat);
+    }
+  }, [selectedChatId]);
 
   useEffect(() => {
     if (user) {
@@ -48,8 +57,6 @@ export default function PathwayPage() {
 
     setSelectedChatId(null);
   };
-
-  const selectedChat = chats.find((chat) => chat._id === selectedChatId);
 
   return (
     <>

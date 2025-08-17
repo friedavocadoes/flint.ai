@@ -18,7 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-  SidebarMenuSkeleton,
+  // SidebarMenuSkeleton,
   SidebarHeader,
   useSidebar,
   SidebarSeparator,
@@ -39,16 +39,17 @@ import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "./ui/themeToggle";
+import staticRoutes from "@/content/routes";
 
 const tools = [
-  { name: "prepareAI", href: "/prepareAI" },
-  { name: "resumeAI", href: "/resume" },
-  { name: "Discussions", href: "/discussions" },
+  { name: "prepareAI", href: staticRoutes.prepare },
+  { name: "resumeAI", href: staticRoutes.resume },
+  { name: "Discussions", href: staticRoutes.discussions },
 ];
 const support = [
-  { name: "Contact Us", href: "#" },
-  { name: "Raise an Issue", href: "#" },
-  { name: "Documentation", href: "#" },
+  { name: "Contact Us", href: staticRoutes.static.contact },
+  { name: "Raise an Issue", href: staticRoutes.static.issue },
+  { name: "Documentation", href: staticRoutes.static.documentation },
 ];
 
 export function AppSidebar({
@@ -78,7 +79,7 @@ export function AppSidebar({
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <a href="#">
+                <a href={staticRoutes.sub}>
                   <CircleFadingArrowUp />
                   <span>Upgrade to pro</span>
                 </a>
