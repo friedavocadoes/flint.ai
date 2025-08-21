@@ -24,7 +24,7 @@ export function AppSidebar({
 }: {
   chats: Chat[] | never[];
   loading: boolean;
-  onChatSelect?: (id: string) => void;
+  onChatSelect?: (id: string | null) => void;
   selectedChatId?: string | null;
 }) {
   // const [loading, setLoading] = useState(false);
@@ -41,8 +41,8 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Add" className="mt-1 mb-2">
-                <SidebarMenuButton asChild onClick={() => onChatSelect?.("")}>
-                  <a href="#">
+                <SidebarMenuButton asChild onClick={() => onChatSelect?.(null)}>
+                  <a href="">
                     <Plus />
                     <span>Plan a new career </span>
                   </a>
@@ -73,7 +73,7 @@ export function AppSidebar({
                           "bg-stone-300 dark:bg-stone-600"
                         }`}
                       >
-                        <a href="#">
+                        <div className="cursor-pointer">
                           <ChartNetwork />
                           <span>
                             {chat.title
@@ -82,7 +82,7 @@ export function AppSidebar({
                                 " at " +
                                 chat.promptData.targetCompanies}
                           </span>
-                        </a>
+                        </div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

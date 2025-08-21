@@ -82,7 +82,7 @@ Make sure the JSON is structured as:
         }
     }
 }
-    Be honest in the advice: tell them if it's unrealistic to jump directly to, say, a CEO, suggest the best path, and break it down. Be detailed and practical, not just motivational fluff.
+    Be honest in the advice: tell them if it's unrealistic to jump directly to ${promptData.role}, suggest the best path, and break it down. Be detailed and practical and tell them the chances(in numbers) of actually getting in, not just motivational fluff.
     Make sure:
     - All string values are valid JSON strings (escape quotes, newlines, etc.).
     - Do not include Markdown code fences (\`\`\`)`;
