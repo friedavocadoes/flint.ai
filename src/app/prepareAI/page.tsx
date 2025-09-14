@@ -17,10 +17,10 @@ import { useUserContext } from "@/context/userContext";
 
 export default function PathwayPage() {
   useProtectedRoute();
+  console.log("component mount");
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const { user } = useUserContext();
   const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
 
@@ -33,6 +33,10 @@ export default function PathwayPage() {
   }, [selectedChatId]);
 
   useEffect(() => {
+    refreshChats();
+  }, [user]);
+
+  const refreshChats = async () => {
     if (user) {
       const id = user.id;
       axios
@@ -42,20 +46,6 @@ export default function PathwayPage() {
           setLoading(false);
         });
     }
-  }, [router]);
-
-  const refreshChats = async () => {
-    const userString = localStorage.getItem("user");
-    if (!userString) return;
-    const user = JSON.parse(userString);
-    setLoading(true);
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${user.id}`
-    );
-    setChats(res.data.chats);
-    setLoading(false);
-
-    setSelectedChatId(null);
   };
 
   return (
@@ -103,7 +93,10 @@ export default function PathwayPage() {
                     {/* delete button */}
                     <AlertDisplay
                       id={selectedChat._id}
-                      onDeleted={refreshChats}
+                      onDeleted={() => {
+                        refreshChats();
+                        setSelectedChatId(null);
+                      }}
                     />
                   </div>
                 </div>

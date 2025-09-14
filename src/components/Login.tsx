@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useUserContext } from "@/context/userContext";
 import { Loader2 } from "lucide-react";
-import { useUserExists } from "@/hooks/protectedRoute";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -24,7 +23,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { updateUser } = useUserContext();
-  useUserExists();
 
   const handleSubmit = async () => {
     setLoading(true);

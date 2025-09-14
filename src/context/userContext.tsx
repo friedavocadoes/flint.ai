@@ -46,11 +46,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   }, []);
 
-  return (
-    <UserContext.Provider value={{ user, updateUser, clearUser }}>
-      {children}
-    </UserContext.Provider>
+  const value = React.useMemo(
+    () => ({
+      user,
+      updateUser,
+      clearUser,
+    }),
+    [user, updateUser, clearUser]
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useUserContext = () => {

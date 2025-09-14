@@ -17,12 +17,10 @@ import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/context/userContext";
-import { useUserExists } from "@/hooks/protectedRoute";
 import { toast } from "sonner";
 import routes from "@/content/routes";
 
 export default function Signup() {
-  useUserExists();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,7 +50,7 @@ export default function Signup() {
       toast.success("Signup successful! Redirecting...");
       setTimeout(() => {
         router.push(routes.auth.hello);
-      }, 1000);
+      }, 100);
     } catch (error: any) {
       if (error.response) {
         // Backend returned an error response
