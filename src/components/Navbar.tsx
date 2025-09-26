@@ -92,11 +92,11 @@ export default function Navbar() {
             <MenuItem setActive={setActive} active={active} item="Tools">
               <div className=" text-stone-400 text-sm grid grid-cols-2 gap-10 p-4">
                 <ProductItem
-                  title="Resume Analyser"
+                  title="[BETA]Resume Analyser"
                   href={routes.resume}
                   src="/thumbs/resume.jpg"
                   description="Analyze and score your Resume with AI to bust through the ATS'"
-                  isComingSoon={true}
+                  // isComingSoon={true}
                 />
                 <ProductItem
                   title="Prepare with Flint"

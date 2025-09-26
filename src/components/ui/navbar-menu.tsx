@@ -103,7 +103,7 @@ export const ProductItem = ({
       href={isComingSoon ? undefined : href}
       className={cn(
         "flex space-x-2 relative group",
-        isComingSoon && "pointer-events-none opacity-60"
+        isComingSoon && " opacity-60 cursor-not-allowed"
       )}
     >
       <div className="relative">
@@ -124,10 +124,20 @@ export const ProductItem = ({
         )}
       </div>
       <div>
-        <h4 className="text-xl font-bold mb-1 text-foreground group-hover:text-green-700 transition duration-200 ">
+        <h4
+          className={`text-xl font-bold mb-1 text-foreground ${
+            !isComingSoon &&
+            "group-hover:text-indigo-800 transition duration-200"
+          } `}
+        >
           {title}
         </h4>
-        <p className="text-fgtext text-sm max-w-[10rem] group-hover:text-green-800 transition duration-200 ">
+        <p
+          className={`text-fgtext text-sm max-w-[10rem] ${
+            !isComingSoon &&
+            "group-hover:text-indigo-900 transition duration-200"
+          }`}
+        >
           {description}
         </p>
       </div>
