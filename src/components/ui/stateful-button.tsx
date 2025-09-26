@@ -76,6 +76,7 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
     onDragEnd,
     onAnimationStart,
     onAnimationEnd,
+    disabled,
     ...buttonProps
   } = props;
 
@@ -85,7 +86,9 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
       layoutId="button"
       ref={scope}
       className={cn(
-        "flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-full bg-green-500 px-4 py-2 font-medium text-white ring-offset-2 transition duration-200 hover:ring-2 hover:ring-green-500 dark:ring-offset-black",
+        "flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-full bg-popover px-4 py-2 font-medium ring-offset-2 transition duration-200 dark:ring-offset-black",
+        disabled && "text-destructive cursor-not-allowed",
+        !disabled && "text-chart-2 hover:ring-2 hover:ring-stone-500",
         className
       )}
       {...buttonProps}

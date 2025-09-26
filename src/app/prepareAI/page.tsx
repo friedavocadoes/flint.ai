@@ -7,7 +7,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/chat-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
 import MarkdownViewer from "@/components/markDownViewer";
 import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
@@ -112,8 +111,6 @@ export default function PathwayPage() {
 
               {/* Description */}
               <div className="-ml-6 md:ml-0 mb-2">
-                {/* {selectedChat.textual} */}
-
                 <MarkdownViewer content={selectedChat.textual} />
               </div>
             </div>

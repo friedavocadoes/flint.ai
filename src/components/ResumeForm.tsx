@@ -11,6 +11,7 @@ export function ResumeForm({
   onSubmit,
   setRole,
   role,
+  errors,
 }: ResumeFormType) {
   const placeholders = [
     "Frontend",
@@ -30,23 +31,31 @@ export function ResumeForm({
         <h2 className=" text-xl text-center sm:text-5xl dark:text-white text-black">
           Step 1: Upload CV
         </h2>
+        {errors.file && (
+          <p className="font-mono text-center text-red-700 mt-3">
+            File not uploaded!
+          </p>
+        )}
+
         <FileUpload setFile={setFile} file={file} />
       </div>
       <div>
         <h2 className="mb-10 text-xl text-center sm:text-5xl dark:text-white text-black">
           Step 2: Target Job role
         </h2>
+
         <PlaceholdersAndVanishInput
           placeholders={placeholders}
           onChange={handleChange}
         />
+        {errors.role && (
+          <p className="font-mono text-center text-red-700 mt-2">
+            Enter a Valid Job Role
+          </p>
+        )}
       </div>
       <div className="mt-10">
-        <Button
-          onClick={onSubmit}
-          disabled={role === ""}
-          className="bg-stone-500"
-        >
+        <Button onClick={onSubmit} disabled={role === ""}>
           Score Resume
         </Button>
       </div>

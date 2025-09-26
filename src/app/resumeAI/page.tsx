@@ -1,19 +1,33 @@
 "use client";
 import { useState } from "react";
-// import MarkdownPreview from "@uiw/react-markdown-preview";
 import MarkdownViewer from "@/components/markDownViewer";
 import axios from "axios";
 import { ResumeForm } from "@/components/ResumeForm";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Resume() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState("");
   const [role, setRole] = useState("");
+  const [errors, setErrors] = useState<{ file: boolean; role: boolean }>({
+    file: false,
+    role: false,
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    setErrors({
+      file: false,
+      role: false,
+    });
+    if (!file || !role) {
+      toast.warning("Check if all fields filled!");
+      if (!file) setErrors((prev) => ({ ...prev, file: true }));
+      if (!role) setErrors((prev) => ({ ...prev, role: true }));
+
+      return;
+    }
 
     setResult("");
 
@@ -27,11 +41,8 @@ export default function Resume() {
   }
   return (
     <>
-      <div className="flex my-20 mx-40">
+      <div className="flex my-15 mx-40">
         <div className="mx-auto justify-center">
-          <h1 className="font-extrabold text-center text-4xl mb-10">
-            Resume AI
-          </h1>
           {result ? (
             <div style={{ marginTop: 20 }}>
               <button
@@ -52,6 +63,7 @@ export default function Resume() {
                 onSubmit={handleSubmit}
                 setRole={setRole}
                 role={role}
+                errors={errors}
               />
             </>
           )}
