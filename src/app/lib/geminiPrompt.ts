@@ -1,4 +1,4 @@
-type promptDataTypes = {
+type prepareAIPromptDataTypes = {
   role: String;
   targetCompanies: String;
   expertise: String;
@@ -8,7 +8,12 @@ type promptDataTypes = {
   extraRemarks: string;
 };
 
-export function getGeminiPrompt(promptData: promptDataTypes) {
+type resumeAIPromptType = {
+  role: String | FormDataEntryValue | null;
+  jd?: String | FormDataEntryValue | null;
+};
+
+export function prepareAIPrompt(promptData: prepareAIPromptDataTypes) {
   return `You are a career coaching assistant. Given the following user profile:
 
 Role aspiration: ${promptData.role}
@@ -86,4 +91,38 @@ Make sure the JSON is structured as:
     Make sure:
     - All string values are valid JSON strings (escape quotes, newlines, etc.).
     - Do not include Markdown code fences (\`\`\`)`;
+}
+
+export function resumeAIPrompt(promptData: resumeAIPromptType) {
+  return `You are an **ATS (Applicant Tracking System) Resume Evaluator**.
+
+The candidate is applying for the role of **${promptData.role}**.  
+${promptData.jd && `Job Description (for context): ${promptData.jd}`}
+
+You will receive the candidate's resume as a **PDF**.
+
+### Your Output (in Markdown):
+# **ATS Score (for ${promptData.role}): XX/100**
+
+Provide ONLY the following sections, each brutally concise and critical:
+
+## 🔑 Key Fixes (Top Priorities)
+- List the **3-5 most urgent changes** needed to beat ATS and recruiters (missing keywords, weak phrasing, format issues, metrics, etc.).  
+- Be blunt and actionable—no generic advice.
+
+## ✅ Strengths
+- 3-5 specific points where the resume performs well (structure, impact, role alignment, quantifiable results, etc.).
+
+## ⚡ Keyword Match
+- **Present:** Important keywords/skills from the job description already in the resume.  
+- **Missing:** High-value keywords/skills that are absent or weak.
+
+## 🏁 Verdict
+- A **2-3 sentence** direct summary of the resume's chances (e.g., “Likely rejected without X,” or “Strong ATS pass but weak recruiter appeal”).
+
+### Rules
+- Be **role-aware**.  
+- Avoid fluff or explanations—**only critical insights**.  
+- Use **Markdown headings and bullet points** for clarity.
+`;
 }

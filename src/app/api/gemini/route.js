@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { jsonrepair } from "jsonrepair";
-import { getGeminiPrompt } from "@/app/lib/geminiPrompt";
+import { prepareAIPrompt } from "@/app/lib/geminiPrompt";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -10,7 +10,7 @@ export async function POST(req) {
   const body = await req.json();
   const promptData = body.promptData;
 
-  const prompt = getGeminiPrompt(promptData);
+  const prompt = prepareAIPrompt(promptData);
 
   try {
     const response = await ai.models.generateContent({

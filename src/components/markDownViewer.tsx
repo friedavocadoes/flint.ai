@@ -1,6 +1,6 @@
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
-export default function MarkdownViewer({ content }) {
+export default function MarkdownViewer({ content }: { content: string }) {
   return (
     <MarkdownPreview
       source={content}
