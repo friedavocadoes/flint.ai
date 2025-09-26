@@ -40,7 +40,7 @@ export function ResumeForm({
         <FileUpload setFile={setFile} file={file} />
       </div>
       <div>
-        <h2 className="mb-10 text-xl text-center sm:text-5xl dark:text-white text-black">
+        <h2 className="mb-5 text-xl text-center sm:text-5xl dark:text-white text-black">
           Step 2: Target Job role
         </h2>
 

@@ -64,7 +64,7 @@ export const FileUpload = ({ setFile, file }: FileType) => {
         />
 
         <div className="flex flex-col items-center justify-center">
-          <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
+          <p className="relative z-20 font-sans font-normal text-center text-neutral-400 dark:text-neutral-400 text-base mt-2">
             Drag or drop your pdf here or click to upload
           </p>
           <div className="relative w-full mt-5 max-w-xl mx-auto">

@@ -41,7 +41,7 @@ export default function Resume() {
   }
   return (
     <>
-      <div className="flex my-15 mx-40">
+      <div className="flex mt-10 mx-4 md:my-15 md:mx-40">
         <div className="mx-auto justify-center">
           {result ? (
             <div style={{ marginTop: 20 }}>
