@@ -1,7 +1,7 @@
 export default {
   sub: "/subscribe",
   profile: "/profile",
-  resume: "resumeAI",
+  resume: "/resumeAI",
   prepare: "/prepareAI",
   mockInterviews: "#",
   discussions: "#",

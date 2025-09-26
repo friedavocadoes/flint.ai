@@ -41,7 +41,7 @@ function PayPerUseCard() {
   );
 }
 
-export default function SubscribePage() {
+function SubscribePage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-16 px-4">
       <h1 className="text-4xl font-bold mb-2 text-primary">Choose Your Plan</h1>
@@ -180,5 +180,18 @@ export default function SubscribePage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function HolUp() {
+  return (
+    <>
+      <div className="min-h-screen bg-background flex flex-col items-center py-16 px-4 mt-40">
+        <h1 className="text-4xl font-bold mb-2 text-primary">Free for all</h1>
+        <p className="text-lg text-muted-foreground mb-10">
+          Theres no payment yet hehe!
+        </p>
+      </div>
+    </>
   );
 }

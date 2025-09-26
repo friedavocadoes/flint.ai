@@ -55,7 +55,7 @@ export default function Navbar() {
           signupRoute: routes.auth.signupRoute,
         }}
       />
-      <div className="fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
+      <div className="z-100 fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
           <Link
@@ -88,7 +88,7 @@ export default function Navbar() {
 
         {/* center section */}
         <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
-          <Menu setActive={setActive} className="flex space-x-3 md:space-x-6">
+          <Menu setActive={setActive} className="flex space-x-3 md:space-x-6 ">
             <MenuItem setActive={setActive} active={active} item="Tools">
               <div className=" text-stone-400 text-sm grid grid-cols-2 gap-10 p-4">
                 <ProductItem
