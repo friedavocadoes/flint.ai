@@ -1,5 +1,4 @@
 # Project Roadmap (Simplified)
-
 ## Phase 1 (MVP)
 
 - Resume upload + screening
