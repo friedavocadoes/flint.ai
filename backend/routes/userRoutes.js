@@ -2,6 +2,7 @@ import express from "express";
 import {
   signup,
   login,
+  googleLogin,
   getAllUsers,
   setMeInfo,
   getMeInfo,
@@ -10,6 +11,7 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.post("/google", googleLogin);
 router.post("/me", setMeInfo);
 router.get("/me/:id", getMeInfo);
 // [admin]

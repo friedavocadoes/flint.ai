@@ -1,5 +1,10 @@
 import User from "../models/User.js";
 import Pathway from "../models/Pathway.js";
+import { OAuth2Client } from "google-auth-library";
+import dotenv from "dotenv";
+dotenv.config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Signup controller
 export const signup = async (req, res) => {
@@ -78,6 +83,67 @@ export const getMeInfo = async (req, res) => {
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ error: "Failed to set user info. " + err.message });
+  }
+};
+
+// Google login — verify id_token, create/link user, ensure Pathway
+export const googleLogin = async (req, res) => {
+  try {
+    const { idToken, credential } = req.body;
+    const token = idToken || credential;
+    if (!token) return res.status(400).json({ error: "Missing Google credential" });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email_verified) {
+      return res.status(401).json({ error: "Google email not verified" });
+    }
+    const { sub: googleId, email, name, picture } = payload;
+
+    let user = await User.findOne({ email }).populate("subscriptionRef");
+    if (user) {
+      // Link googleId if not already linked, update avatar/name
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.avatar = picture;
+        if (!user.authProvider || user.authProvider === "local") user.authProvider = "google";
+        await user.save();
+      }
+    } else {
+      // Try by googleId
+      user = await User.findOne({ googleId });
+      if (!user) {
+        user = new User({
+          email,
+          name: name || email.split("@")[0],
+          googleId,
+          avatar: picture,
+          authProvider: "google",
+        });
+        await user.save();
+        const pathway = new Pathway({ user: user.id, chats: [] });
+        await pathway.save();
+        await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
+      }
+      user = await User.findById(user.id).populate("subscriptionRef");
+    }
+
+    res.status(200).json({
+      message: "Google login successful.",
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar || picture,
+        pro: !!(user.subscriptionRef && user.subscriptionRef.status === "active"),
+      },
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(401).json({ error: "Google authentication failed. " + err.message });
   }
 };
 

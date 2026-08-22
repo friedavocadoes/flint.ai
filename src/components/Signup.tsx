@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useUserContext } from "@/context/userContext";
 import { toast } from "sonner";
 import routes from "@/content/routes";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -129,7 +130,7 @@ export default function Signup() {
           instead?
         </span>
       </CardContent>
-      <CardFooter className="flex justify-start flex-col ">
+      <CardFooter className="flex justify-start flex-col gap-3">
         {loading ? (
           <Button disabled className="self-start">
             <Loader2 className="animate-spin" />
@@ -143,8 +144,14 @@ export default function Signup() {
             Sign Up
           </Button>
         )}
+        <div className="w-full flex items-center gap-2 my-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <GoogleLoginButton mode="signup" />
 
-        <span className="text-stone-500 text-xs self-start mt-3 ml-1">
+        <span className="text-stone-500 text-xs self-start mt-1 ml-1">
           By Signing Up, you agree to our{" "}
           <a href="#" className="underline">
             Terms of Service

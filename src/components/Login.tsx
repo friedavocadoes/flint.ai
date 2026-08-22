@@ -17,6 +17,7 @@ import axios from "axios";
 import { useUserContext } from "@/context/userContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -101,7 +102,7 @@ export default function Login() {
           first?
         </span>
       </CardContent>
-      <CardFooter className="flex justify-start flex-col ">
+      <CardFooter className="flex justify-start flex-col gap-3">
         {loading ? (
           <Button disabled className="self-start">
             <Loader2 className="animate-spin" />
@@ -115,6 +116,12 @@ export default function Login() {
             Log in
           </Button>
         )}
+        <div className="w-full flex items-center gap-2 my-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <GoogleLoginButton mode="login" />
       </CardFooter>
     </Card>
   );

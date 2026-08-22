@@ -105,6 +105,9 @@ export interface User {
   email: string;
   pro?: boolean | undefined;
   passwordHash?: string;
+  avatar?: string;
+  googleId?: string;
+  authProvider?: "local" | "google";
   payments?: Payment[];
   createdAt?: string;
   updatedAt?: string;
