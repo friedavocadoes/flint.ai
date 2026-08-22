@@ -77,15 +77,12 @@ export default function PathwayPage() {
                   </p>
                 )}
               </div>
-
               <PromptForm
                 onChatCreated={async (newChatId: string) => {
                   const userString = localStorage.getItem("user");
                   if (!userString) return;
                   const storedUser = JSON.parse(userString);
-                  const res = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${storedUser.id}`,
-                  );
+                  const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${storedUser.id}`);
                   setChats(res.data.chats);
                   setSelectedChatId(newChatId);
                 }}
