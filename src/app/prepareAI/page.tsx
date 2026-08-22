@@ -11,16 +11,16 @@ import MarkdownViewer from "@/components/markDownViewer";
 import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
 import { PromptDisplay } from "@/components/iDisplay"; // The i display thingy
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, Loader2 } from "lucide-react";
 import { useUserContext } from "@/context/userContext";
 
 export default function PathwayPage() {
-  useProtectedRoute();
-  console.log("component mount");
+  const { user, loading: authLoading } = useUserContext();
+  const { loading: guardLoading } = useProtectedRoute();
+  const isAuthResolving = authLoading || guardLoading;
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useUserContext();
   const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
 
   // Update chat if chat id
@@ -32,20 +32,40 @@ export default function PathwayPage() {
   }, [selectedChatId]);
 
   useEffect(() => {
+    if (isAuthResolving) return;
     refreshChats();
-  }, [user]);
+  }, [user, isAuthResolving]);
 
   const refreshChats = async () => {
-    if (user) {
-      const id = user.id;
-      axios
-        .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
-        .then((res) => {
-          setChats(res.data.chats);
-          setLoading(false);
-        });
+    if (!user) {
+      setLoading(false);
+      return;
     }
+    const id = user.id;
+    axios
+      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/pathway/chats/${id}`)
+      .then((res) => {
+        setChats(res.data.chats);
+      })
+      .catch(() => {
+        setChats([]);
+      })
+      .finally(() => setLoading(false));
   };
+
+  if (isAuthResolving) {
+    return (
+      <div className="flex h-[70vh] w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-sm text-muted-foreground">Checking session…</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    // Redirect is in progress (useProtectedRoute) — avoid flash of protected content
+    return null;
+  }
 
   return (
     <>

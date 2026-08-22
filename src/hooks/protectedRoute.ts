@@ -5,31 +5,35 @@ import { toast } from "sonner";
 import routes from "@/content/routes";
 
 export function useProtectedRoute() {
-  const { user } = useUserContext();
+  const { user, loading } = useUserContext();
   const router = useRouter();
-  console.log("protect call");
 
   useEffect(() => {
+    // Wait until hydration finishes — prevents glitch where initial null triggers false redirect
+    if (loading) return;
     if (!user) {
       toast.warning("You must Log in before using");
       router.replace(routes.auth.loginRoute);
     }
-  }, [user]);
+  }, [user, loading, router]);
+
+  return { user, loading, isAuthenticated: !!user };
 }
 
 export function useUserExists() {
-  const { user } = useUserContext();
+  const { user, loading } = useUserContext();
   const router = useRouter();
   const pathname = usePathname();
-  console.log("exist call");
 
   useEffect(() => {
+    if (loading) return;
     if (user) {
-      console.log(pathname);
       if (pathname !== "/hello") {
-        router.push(routes.prepare);
+        router.replace(routes.prepare);
         toast.info("Already logged in");
       }
     }
-  }, [user]);
+  }, [user, loading, pathname, router]);
+
+  return { user, loading, isAuthenticated: !!user };
 }

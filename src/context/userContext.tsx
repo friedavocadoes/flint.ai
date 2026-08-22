@@ -10,6 +10,7 @@ import type { User } from "@/types/user";
 
 interface UserContextType {
   user: User | null;
+  loading: boolean;
   updateUser: (newUser: User) => void;
   clearUser: () => void;
 }
@@ -20,8 +21,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount — keep loading true until hydration finishes
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -32,6 +34,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(null);
       }
     }
+    setLoading(false);
   }, []);
 
   // Update user in localStorage and state
@@ -49,10 +52,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = React.useMemo(
     () => ({
       user,
+      loading,
       updateUser,
       clearUser,
     }),
-    [user, updateUser, clearUser]
+    [user, loading, updateUser, clearUser]
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
