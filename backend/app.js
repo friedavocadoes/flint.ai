@@ -7,6 +7,7 @@ import pathwayRoutes from "./routes/pathwayRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import razorpayWebhook from "./webhooks/razorpayWebhook.js";
+import resumeHistoryRoutes from "./routes/resumeHistoryRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api", testRoutes);
 app.use("/api/pathway", pathwayRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/razorpayMain", paymentRoutes);
+app.use("/api/resumeHistory", resumeHistoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
