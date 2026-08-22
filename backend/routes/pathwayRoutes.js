@@ -6,6 +6,7 @@ import {
   deleteChat,
   updateFlow,
   updateChat,
+  updateProgress,
 } from "../controllers/pathwayController.js";
 
 const router = express.Router();
@@ -25,7 +26,11 @@ router.delete("/chat/:id", deleteChat);
 // Update the flow diagram (flowjson.structdata)
 router.put("/flow/:id", updateFlow);
 
-// Update gemini response (title, textual, flowjson.pathwaydata)
+// Update gemini response (title, textual, flowjson.pathwaydata + rich fields)
 router.put("/chat/:id", updateChat);
+
+// Update progress (stage/task completion, XP)
+router.put("/chat/:id/progress", updateProgress);
+router.patch("/chat/:id/progress", updateProgress);
 
 export default router;

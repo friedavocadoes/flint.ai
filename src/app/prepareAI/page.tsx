@@ -2,17 +2,16 @@
 import type { Chat } from "./types";
 import { useProtectedRoute } from "@/hooks/protectedRoute";
 import "reactflow/dist/style.css";
-import CareerFlowchart from "@/components/ui/flow-viewer";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/chat-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import MarkdownViewer from "@/components/markDownViewer";
 import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
 import { PromptDisplay } from "@/components/iDisplay"; // The i display thingy
-import { TriangleAlert, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useUserContext } from "@/context/userContext";
+import { InteractiveRoadmap } from "@/components/pathway/InteractiveRoadmap";
 
 export default function PathwayPage() {
   const { user, loading: authLoading } = useUserContext();
@@ -97,49 +96,22 @@ export default function PathwayPage() {
           </div>
         ) : (
           <div className="ml-3 md:ml-6">
-            <div className="md:w-3/5">
-              {/* Title */}
-              <h2 className="flex flex-col md:flex-row items-center mx-auto text-2xl font-bold mb-4">
-                {selectedChat.title}
-
-                <div className="flex self-start -ml-4 md:ml-0">
-                  <PromptDisplay data={selectedChat.promptData} />
-                  <div className="mt-2">
-                    {/* delete button */}
-                    <AlertDisplay
-                      id={selectedChat._id}
-                      onDeleted={() => {
-                        refreshChats();
-                        setSelectedChatId(null);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* display flow error on phones */}
-                <div className="md:hidden flex self-start items-center mt-2">
-                  <TriangleAlert className="w-4 text-amber-400" />
-                  <p className="text-xs font-mono text-amber-400 ml-2">
-                    Flow diagram not viewable on phone!
-                  </p>
-                </div>
-              </h2>
-
-              {/* Description */}
-              <div className="-ml-6 md:ml-0 mb-2">
-                <MarkdownViewer content={selectedChat.textual} />
-              </div>
+            <div className="flex items-center gap-2 mb-3">
+              <PromptDisplay data={selectedChat.promptData} />
+              <AlertDisplay
+                id={selectedChat._id}
+                onDeleted={() => {
+                  refreshChats();
+                  setSelectedChatId(null);
+                }}
+              />
             </div>
-
-            {/* Flow diagram */}
-            {selectedChat.flowjson?.pathwayData && (
-              <div className="hidden md:block h-3/4 w-1/4 fixed right-12 top-17">
-                <h1 className="mb-2 text-center font-bold text-2xl">
-                  Flow Chart
-                </h1>
-                <CareerFlowchart data={selectedChat.flowjson.pathwayData} />
-              </div>
-            )}
+            <InteractiveRoadmap
+              chat={selectedChat}
+              onUpdated={(updated) => {
+                setChats((prev) => prev.map((c) => (c._id === updated._id ? updated : c)));
+              }}
+            />
           </div>
         )}
       </div>

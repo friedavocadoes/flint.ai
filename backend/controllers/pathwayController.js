@@ -80,12 +80,19 @@ export const updateFlow = async (req, res) => {
 
 export const updateChat = async (req, res) => {
   const id = req.params.id;
-  const { title, textual, flowjson } = req.body.chat;
+  const chatPayload = req.body.chat || req.body;
+  const { title, textual, overview, summary, meta, motivation, flowjson, progress } = chatPayload;
   try {
     const updateFields = {};
     if (title !== undefined) updateFields["chats.$.title"] = title;
     if (textual !== undefined) updateFields["chats.$.textual"] = textual;
+    if (overview !== undefined) updateFields["chats.$.overview"] = overview;
+    if (summary !== undefined) updateFields["chats.$.summary"] = summary;
+    if (meta !== undefined) updateFields["chats.$.meta"] = meta;
+    if (motivation !== undefined) updateFields["chats.$.motivation"] = motivation;
     if (flowjson !== undefined) updateFields["chats.$.flowjson"] = flowjson;
+    if (progress !== undefined) updateFields["chats.$.progress"] = progress;
+    // also allow direct legacy flat structure
     const updatedPathway = await Pathway.findOneAndUpdate(
       { "chats._id": id },
       { $set: updateFields },
@@ -95,6 +102,68 @@ export const updateChat = async (req, res) => {
       return res.status(404).json({ error: "Chat not found" });
     }
     res.json(updatedPathway);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateProgress = async (req, res) => {
+  const id = req.params.id;
+  const { stageId, taskId, action, completedStageIds, completedTaskIds } = req.body;
+  try {
+    const pathway = await Pathway.findOne({ "chats._id": id });
+    if (!pathway) return res.status(404).json({ error: "Chat not found" });
+    const chat = pathway.chats.id(id);
+    if (!chat) return res.status(404).json({ error: "Chat not found" });
+
+    if (!chat.progress) chat.progress = { completedStageIds: [], completedTaskIds: [], xpEarned: 0 };
+
+    // Bulk replace mode (used by frontend optimistic sync)
+    if (Array.isArray(completedStageIds)) chat.progress.completedStageIds = completedStageIds;
+    if (Array.isArray(completedTaskIds)) chat.progress.completedTaskIds = completedTaskIds;
+
+    // Incremental mode
+    if (stageId) {
+      const set = new Set(chat.progress.completedStageIds || []);
+      if (action === "complete_stage" || action === "complete") set.add(stageId);
+      else if (action === "uncomplete_stage" || action === "uncomplete") set.delete(stageId);
+      else if (action === "toggle") {
+        if (set.has(stageId)) set.delete(stageId);
+        else set.add(stageId);
+      }
+      chat.progress.completedStageIds = [...set];
+    }
+    if (taskId) {
+      const tSet = new Set(chat.progress.completedTaskIds || []);
+      if (action === "complete_task" || action === "complete") tSet.add(taskId);
+      else if (action === "uncomplete_task" || action === "uncomplete") tSet.delete(taskId);
+      else if (action === "toggle_task" || action === "toggle") {
+        if (tSet.has(taskId)) tSet.delete(taskId);
+        else tSet.add(taskId);
+      } else {
+        // default task toggle
+        if (!stageId) {
+          if (tSet.has(taskId)) tSet.delete(taskId);
+          else tSet.add(taskId);
+        }
+      }
+      chat.progress.completedTaskIds = [...tSet];
+    }
+
+    // recalc xp: sum stage xp for completed stages + 10 per completed task
+    let xp = 0;
+    if (chat.flowjson?.pathwayData?.stages) {
+      for (const st of chat.flowjson.pathwayData.stages) {
+        if ((chat.progress.completedStageIds || []).includes(st.id)) xp += st.xp || 100;
+      }
+    }
+    xp += (chat.progress.completedTaskIds || []).length * 10;
+    chat.progress.xpEarned = xp;
+    chat.progress.lastActiveAt = new Date();
+    if (!chat.progress.startedAt) chat.progress.startedAt = new Date();
+
+    await pathway.save();
+    res.json({ progress: chat.progress, chatId: id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

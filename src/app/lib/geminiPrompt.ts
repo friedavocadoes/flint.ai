@@ -14,83 +14,83 @@ type resumeAIPromptType = {
 };
 
 export function prepareAIPrompt(promptData: prepareAIPromptDataTypes) {
-  return `You are a career coaching assistant. Given the following user profile:
+  return `You are a career coaching assistant that designs GAMIFIED, INTERACTIVE roadmaps. Given the user profile:
 
 Role aspiration: ${promptData.role}
-
 Target company/ies: ${promptData.targetCompanies}
-
 Expertise: ${promptData.expertise}
-
 Weak areas: ${promptData.weakAreas}
-
 Skill level: ${promptData.skillLevel}
-
 Time commitment: ${promptData.timeCommitment}
-
 Extra remarks: ${promptData.extraRemarks}
 
-Generate a JSON response containing:
+Design an ENGAGING career pathway that feels like a quest, not a textbook. Be motivational but brutally honest about chances.
 
-1. A title for the career pathway (max 5 words).
-2. A textual description (formatted in markdown) giving the user realistic, step-by-step advice on what they should focus on to eventually become a what they have asked for, considering their current skillset and weaknesses. Include:
-
-Required skill improvements.
-
-Short-term and long-term goals.
-
-Recommended resources (specific LeetCode question sets, specific tools, books, platforms, networking advice, leadership courses, etc.).
-
-Realistic milestones: if direct jump isn't possible, explain the ladder (e.g., engineering → team lead → director → VP → CEO).
-
-3. A flowjson object with:
-
-A list of stages (id + title).
-
-A list of connections between stages.
-
-For each stage, include realistic x/y coordinates to lay them out cleanly in ReactFlow, spaced horizontally (e.g., x = stage_index * 300, y = 100).
-
-Make sure the JSON is structured as:
+Generate JSON with this EXACT shape (no extra keys, no markdown fences):
 
 {
-    "chat": {
-        "title": "...",
-        "textual": "...",
-        "flowjson": {
-            "pathwayData": {
-                "stages": [
-                    { "id": "1", "title": "..." },
-                    { "id": "2", "title": "..." }
-                ],
-                "connections": [
-                    { "from": "1", "to": "2" }
-                ]
-            },
-            "structData": {
-                "nodes": [
-                    {
-                        "id": "1",
-                        "data": { "label": "..." },
-                        "position": { "x": 0, "y": 100 }
-                    }
-                ],
-                "edges": [
-                    {
-                        "source": "1",
-                        "target": "2",
-                        "animated": true,
-                        "id": "reactflow__edge-1-2"
-                    }
-                ]
-            }
-        }
+  "chat": {
+    "title": "2-5 words, punchy (e.g. 'SDE I → Staff Ladder')",
+    "summary": "One compelling hook sentence under 22 words that makes the user click Start",
+    "overview": "Markdown overview (150-220 words) with short-term/long-term breakdown, keep concise",
+    "textual": "Alias of overview — duplicate overview here for backward compat",
+    "meta": {
+      "chances": 0-100 integer honest fit score for ${promptData.role} at ${promptData.targetCompanies},
+      "verdict": "1-sentence brutal verdict (e.g. 'Direct jump unlikely; SDE-2 bridge in 7 months')",
+      "timeline": "realistic total (e.g. '6-9 months', '2.5 years')",
+      "level": "Beginner|Intermediate|Advanced",
+      "commitmentFit": "e.g. 'Fits 4h/day • intense' or 'Needs 6h/day — stretch'"
+    },
+    "motivation": {
+      "streakTip": "15-word daily habit that keeps momentum",
+      "nextWin": "What happens if they start today for 7 days (e.g. 'Finish DSA Sprint → unlock System-Design lab')"
+    },
+    "flowjson": {
+      "pathwayData": {
+        "stages": [
+          {
+            "id": "1",
+            "title": "Short stage name (max 28 chars)",
+            "subtitle": "Scope + duration (e.g. 'DSA foundations • 2-3 weeks • 20h')",
+            "description": "45-60 word what to do, why it unblocks ${promptData.role}",
+            "icon": "Lucide icon name (e.g. Code2, Rocket, Library, Users, Target, Brain, Briefcase, Layers)",
+            "type": "skill|project|habit|networking|interview|milestone",
+            "difficulty": "Beginner|Intermediate|Advanced",
+            "estimatedDuration": "e.g. '2-3 weeks'",
+            "estimatedHours": 20,
+            "xp": 120,
+            "whyItMatters": "1 sentence linking to ${promptData.targetCompanies} hiring bar",
+            "deliverable": "Tangible proof (e.g. 'GitHub repo + 3 blogs' or '5 mock interviews')",
+            "order": 1,
+            "tasks": [
+              { "id": "1-1", "label": "Specific actionable task with count (e.g. Solve 18 NeetCode arrays)", "type": "practice" },
+              { "id": "1-2", "label": "Project task (e.g. Build URL shortener in Go)", "type": "project" },
+              { "id": "1-3", "label": "Learn resource (e.g. Watch MIT 6.006 Lecture 3)", "type": "learn" }
+            ],
+            "resources": [
+              { "label": "NeetCode 150 Arrays", "url": "https://neetcode.io/practice", "type": "leetcode" },
+              { "label": "Grokking Algorithms Ch 1-2", "url": "https://example.com", "type": "book" }
+            ]
+          }
+        ],
+        "connections": [{ "from": "1", "to": "2" }]
+      },
+      "structData": {
+        "nodes": [{ "id": "1", "data": { "label": "Stage title" }, "position": { "x": 0, "y": 100 } }],
+        "edges": [{ "source": "1", "target": "2", "animated": true, "id": "reactflow__edge-1-2" }]
+      }
     }
+  }
 }
-    Be honest in the advice: tell them if it's unrealistic to jump directly to ${promptData.role}, suggest the best path, and break it down. Be detailed and practical and tell them the chances(in numbers) of actually getting in, not just motivational fluff.
-    Make sure:
-    - All string values are valid JSON strings (escape quotes, newlines, etc.).
-    - Do not include Markdown code fences (\`\`\`)`;
+
+Rules:
+- Create 5-7 stages that ladder realistically; if ${promptData.skillLevel} low and they want unicorn role, add bridge roles (e.g. Junior→Mid→Target).
+- Each stage: 3-4 tasks, 2-3 resources with REAL URLs (neetcode, coursera, youtube, github), xp 80-200 scaled by difficulty.
+- Position nodes horizontally: x=index*320, y=100.
+- Respect timeCommitment ${promptData.timeCommitment}: if low, extend timeline, assign habit tasks.
+- Weak areas ${promptData.weakAreas} must appear as explicit tasks.
+- Be detailed but scannable; avoid generic fluff.
+- Escape JSON strings properly. Do not use markdown code fences. Ensure numeric chances is integer, xp integer, estimatedHours integer.`;
 }
 
 export function resumeAIPrompt(promptData: resumeAIPromptType) {
