@@ -1,183 +1,217 @@
 "use client";
+
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useUserInfo } from "@/hooks/useUserInfo";
-import PaymentTable, { PaymentTableLoader } from "@/components/paymentTable";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { ArrowUpRight, CalendarDays, Check, CreditCard, Crown, ExternalLink, Globe2, Mail, ShieldCheck, UserRound, WalletCards } from "lucide-react";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import PaymentTable from "@/components/paymentTable";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const GOOGLE_PROFILE_SETTINGS = "https://myaccount.google.com/personal-info";
 
 export default function Profile() {
   const { userInfo, loading } = useUserInfo();
-  console.log(userInfo);
+
+  if (loading) return <ProfileLoader />;
+
+  if (!userInfo) {
+    return (
+      <div className="mx-4 flex min-h-[60vh] items-center justify-center md:mx-20">
+        <div className="rounded-3xl border border-border/60 bg-card/70 px-8 py-10 text-center shadow-sm">
+          <UserRound className="mx-auto mb-4 h-8 w-8 text-muted-foreground" />
+          <h1 className="text-xl font-semibold">Couldn&apos;t load your profile</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Try refreshing the page and loading your account again.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isGoogle = userInfo.authProvider === "google" || Boolean(userInfo.googleId);
+  const isPro = Boolean(userInfo.pro);
+  const subscription = userInfo.subscriptionRef;
+  const payments = userInfo.payments ?? [];
+
   const bioData = [
-    { name: "Role", data: userInfo?.role },
-    { name: "Nationality", data: userInfo?.nationality },
-    { name: "Age", data: userInfo?.age },
-    { name: "Gender", data: userInfo?.sex },
+    { label: "Role", value: userInfo.role || "Not set", icon: ShieldCheck },
+    { label: "Nationality", value: userInfo.nationality || "Not set", icon: Globe2 },
+    { label: "Age", value: userInfo.age ? `${userInfo.age} years` : "Not set", icon: CalendarDays },
+    { label: "Gender", value: userInfo.sex || "Not set", icon: UserRound },
   ];
+
   return (
-    <>
-      {loading ? (
-        <ProfileLoader />
-      ) : (
-        <div className="grid md:grid-cols-5 md:grid-rows-auto mt-20 md:mt-30 mb-20 mx-4 md:mx-20 gap-6">
-          {/* Name and avatar */}
-          <Card className="md:col-span-2 md:row-span-2 flex flex-col h-full">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">
-                {userInfo?.name}
-              </CardTitle>
-              <CardDescription className="font-semibold">
-                {userInfo?.email}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="mx-auto flex-1">
-              <div className="h-78 w-78 rounded-full bg-slate-400"></div>
-            </CardContent>
-            <CardFooter className="flex flex-col justify-end text-center text-xs text-stone-400">
-              {userInfo?.createdAt && (
+    <main className="mx-4 mt-20 mb-20 md:mx-20 md:mt-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-7 flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Account</p>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Your profile</h1>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">Manage your personal details, plan, and payment activity from one place.</p>
+          </div>
+          <Link href="/hello" className="hidden shrink-0 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 py-2.5 text-sm font-semibold transition hover:border-foreground/20 hover:bg-accent md:flex">
+            Edit details
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-5 md:grid-rows-[minmax(270px,1fr)_minmax(220px,0.82fr)_auto]">
+          <section className="group relative flex min-h-[520px] flex-col overflow-hidden rounded-[28px] border border-border/60 bg-card p-6 shadow-sm md:col-span-2 md:row-span-2">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-violet-500/10 blur-3xl transition duration-500 group-hover:bg-violet-500/15" />
+            <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl" />
+            <div className="relative flex items-center justify-between">
+              <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Profile</span>
+              <div className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${isPro ? "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-300" : "border-border/70 bg-background/60 text-muted-foreground"}`}>
+                {isPro && <Crown className="h-3.5 w-3.5" />}
+                {isPro ? "PRO" : "FREE"}
+              </div>
+            </div>
+
+            <div className="relative flex flex-1 flex-col items-center justify-center py-8 text-center">
+              <div className="relative mb-7">
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-violet-500/30 via-cyan-400/20 to-transparent blur-md" />
+                <div className="relative rounded-full bg-gradient-to-br from-violet-500 via-cyan-400 to-violet-500 p-[2px]">
+                  <div className="rounded-full bg-card p-1.5">
+                    {userInfo.avatar ? (
+                      <img src={userInfo.avatar} alt={`${userInfo.name}'s profile photo`} className="h-36 w-36 rounded-full object-cover md:h-44 md:w-44" referrerPolicy="no-referrer" />
+                    ) : (
+                      <div className="flex h-36 w-36 items-center justify-center rounded-full bg-muted text-5xl font-bold text-muted-foreground md:h-44 md:w-44">{getInitials(userInfo.name)}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <h2 className="max-w-full truncate px-2 text-2xl font-bold tracking-tight md:text-3xl">{userInfo.name}</h2>
+              <div className="mt-2 flex max-w-full items-center justify-center gap-2 px-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4 shrink-0" />
+                <span className="truncate">{userInfo.email}</span>
+              </div>
+              {isGoogle && (
+                <a href={GOOGLE_PROFILE_SETTINGS} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3.5 py-2 text-xs font-semibold transition hover:border-foreground/20 hover:bg-accent">
+                  <IconBrandGoogleFilled className="h-3.5 w-3.5" />
+                  Google account
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </a>
+              )}
+            </div>
+
+            <div className="relative border-t border-border/60 pt-5 text-center">
+              {userInfo.createdAt && (
                 <>
-                  <span className="font-semibold">Account created on </span>
-                  {formatFancyDate(userInfo.createdAt)}
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Account created</p>
+                  <p className="mt-1 text-sm font-medium">{formatFancyDate(userInfo.createdAt)}</p>
                 </>
               )}
-            </CardFooter>
-          </Card>
+              {isGoogle && (
+                <a href={GOOGLE_PROFILE_SETTINGS} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition hover:text-foreground">
+                  Manage profile photo in Google
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          </section>
 
-          {/* Bio and details */}
-          <Card className="md:col-span-3 md:row-span-1 flex flex-col h-full">
-            <CardHeader>
-              <CardTitle className="text-xl">Bio</CardTitle>
-              <CardDescription>Details</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 grid-rows-2 gap-5 text-md mt-1 ml-4">
-              {bioData?.map((bio) => (
-                <div className="flex flex-col" key={bio.name}>
-                  <span className="font-semibold text-xs text-stone-500">
-                    {bio.name}{" "}
-                  </span>
-                  {bio.data}
+          <section className="relative overflow-hidden rounded-[28px] border border-border/60 bg-card p-6 shadow-sm md:col-span-3">
+            <div className="mb-5 flex items-start justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">About you</p>
+                <h2 className="mt-1 text-xl font-bold tracking-tight">Personal details</h2>
+              </div>
+              <Link href="/hello" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-accent hover:text-foreground">
+                Edit
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {bioData.map(({ label, value, icon: Icon }) => (
+                <div key={label} className="rounded-2xl border border-border/50 bg-background/45 p-4 transition hover:border-border hover:bg-accent/40">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Icon className="h-4 w-4" /></div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+                  <p className="mt-1 truncate text-sm font-semibold">{value}</p>
                 </div>
               ))}
-            </CardContent>
-            <CardFooter className="justify-end align-bottom text-left">
-              <Link
-                href="/hello"
-                className="px-3 py-2 font-semibold hover:underline hover:text-blue-600 transition duration-100 text-left"
-              >
-                Edit details
-              </Link>
-            </CardFooter>
-          </Card>
+            </div>
+          </section>
 
-          {/* Premium and billing */}
-          <Card className="md:col-span-3 md:row-span-1">
-            <CardHeader>
-              <CardTitle className="text-xl">Premium & Billing</CardTitle>
-              <CardDescription>Details</CardDescription>
-            </CardHeader>
-          </Card>
+          <section className={`relative overflow-hidden rounded-[28px] border p-6 shadow-sm md:col-span-3 ${isPro ? "border-violet-500/25 bg-gradient-to-br from-violet-500/[0.10] via-card to-cyan-500/[0.06]" : "border-border/60 bg-card"}`}>
+            {isPro && <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-violet-500/15 blur-3xl" />}
+            <div className="relative flex h-full flex-col justify-between gap-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Membership</p>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight">{isPro ? "Flint Pro" : "Free plan"}</h2>
+                </div>
+                <div className={`rounded-xl p-2.5 ${isPro ? "bg-violet-500/15 text-violet-600 dark:text-violet-300" : "bg-muted text-muted-foreground"}`}>
+                  {isPro ? <Crown className="h-5 w-5" /> : <WalletCards className="h-5 w-5" />}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <PlanStat label="Status" value={subscription?.status === "active" ? "Active" : isPro ? "Pro" : "Available"} />
+                <PlanStat label="Chat credits" value={subscription?.activeChatCredits != null ? String(subscription.activeChatCredits) : isPro ? "—" : "0"} />
+                {subscription?.endDate && <PlanStat label="Renews / ends" value={formatShortDate(subscription.endDate)} />}
+                <PlanStat label="Account" value={isGoogle ? "Google" : "Email"} />
+              </div>
+              {!isPro ? (
+                <Link href="/pricing" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background transition hover:opacity-90">Explore Pro <ArrowUpRight className="h-4 w-4" /></Link>
+              ) : subscription?.status === "active" ? (
+                <div className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-background/50 px-4 py-3 text-sm font-medium"><Check className="h-4 w-4 text-violet-500" />Your Pro plan is active</div>
+              ) : null}
+            </div>
+          </section>
 
-          {/* Payment history */}
-          <Card className="md:col-span-5">
-            <CardHeader>
-              <CardTitle className="text-xl">Payment History</CardTitle>
-              <CardDescription>Past payment activities</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {userInfo?.payments && (
-                <PaymentTable payments={userInfo.payments} />
+          <section className="overflow-hidden rounded-[28px] border border-border/60 bg-card shadow-sm md:col-span-5">
+            <div className="flex flex-col gap-4 border-b border-border/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
+                <div className="mt-1 flex items-center gap-3">
+                  <h2 className="text-xl font-bold tracking-tight">Payment history</h2>
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">{payments.length} {payments.length === 1 ? "payment" : "payments"}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="h-4 w-4" />Secured by Razorpay</div>
+            </div>
+            <div className="px-3 py-2 sm:px-6 sm:py-4">
+              {payments.length > 0 ? <PaymentTable payments={payments} /> : (
+                <div className="flex min-h-44 flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-background/30 px-6 text-center">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-muted"><CreditCard className="h-5 w-5 text-muted-foreground" /></div>
+                  <p className="text-sm font-semibold">No payments yet</p>
+                  <p className="mt-1 max-w-sm text-xs text-muted-foreground">Your purchases and subscription payments will appear here automatically.</p>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
-      )}
-    </>
+      </div>
+    </main>
   );
+}
+
+function PlanStat({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-xl border border-border/50 bg-background/45 px-3.5 py-3"><p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 truncate text-sm font-semibold">{value}</p></div>;
 }
 
 export function ProfileLoader() {
   return (
-    <div className="grid md:grid-cols-5 md:grid-rows-9 mt-20 md:mt-30 mx-20 gap-6">
-      <Card className="md:col-span-2 md:row-span-2 flex flex-col h-full">
-        <CardHeader className="text-center ">
-          <CardTitle className="mx-auto">
-            <Skeleton className="h-8 w-60" />
-          </CardTitle>
-          <CardDescription className="font-semibold mx-auto">
-            <Skeleton className="h-5 w-30" />
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="mx-auto flex-1 flex items-center justify-center ">
-          <Skeleton className="w-78 h-78 rounded-full" />
-        </CardContent>
-        {/* footer on the bottom */}
-        <CardFooter className=" flex flex-col justify-end text-center text-xs text-stone-400">
-          <Skeleton className="w-40 h-4" />
-          <Skeleton className="w-50 h-4 mt-2" />
-        </CardFooter>
-      </Card>
-
-      {/* bio */}
-      <Card className="md:col-span-3 md:row-span-1">
-        <CardHeader>
-          <CardTitle className="text-xl">Bio</CardTitle>
-          <CardDescription>Details</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 grid-rows-2 gap-6 text-md mt-1 ml-4">
-          {[1, 2, 3, 4].map((bio) => (
-            <div className="flex flex-col" key={bio}>
-              <span className="font-semibold text-xs text-stone-500 mb-2">
-                <Skeleton className="w-15 h-4" />
-              </span>
-              <Skeleton className="w-40 h-6" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Premium and billing */}
-      <Card className="md:col-span-3 md:row-span-1">
-        <CardHeader>
-          <CardTitle className="text-xl">Premium & Billing</CardTitle>
-          <CardDescription>Details</CardDescription>
-        </CardHeader>
-      </Card>
-
-      {/* Payment history */}
-      <Card className="md:col-span-5">
-        <CardHeader>
-          <CardTitle className="text-xl">Payment History</CardTitle>
-          <CardDescription>Past payment activities</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PaymentTableLoader />
-        </CardContent>
-      </Card>
-    </div>
+    <main className="mx-4 mt-20 mb-20 md:mx-20 md:mt-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-7 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-10 w-52" /><Skeleton className="h-4 w-80" /></div>
+        <div className="grid gap-5 md:grid-cols-5 md:grid-rows-[minmax(270px,1fr)_minmax(220px,0.82fr)_auto]">
+          <div className="min-h-[520px] rounded-[28px] border border-border/60 p-6 md:col-span-2 md:row-span-2"><div className="flex justify-between"><Skeleton className="h-7 w-20 rounded-full" /><Skeleton className="h-7 w-14 rounded-full" /></div><div className="flex h-[420px] flex-col items-center justify-center gap-5"><Skeleton className="h-44 w-44 rounded-full" /><Skeleton className="h-8 w-48" /><Skeleton className="h-5 w-64" /><Skeleton className="h-8 w-32 rounded-full" /></div><Skeleton className="h-10 w-full" /></div>
+          <Skeleton className="min-h-[270px] rounded-[28px] md:col-span-3" />
+          <Skeleton className="min-h-[220px] rounded-[28px] md:col-span-3" />
+          <div className="min-h-56 rounded-[28px] border border-border/60 p-6 md:col-span-5"><Skeleton className="h-8 w-52" /><div className="mt-8 space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div></div>
+        </div>
+      </div>
+    </main>
   );
 }
 
+function getInitials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? "").join("") || "U";
+}
+
 function formatFancyDate(dateString: string) {
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const daySuffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-      ? "nd"
-      : day % 10 === 3 && day !== 13
-      ? "rd"
-      : "th";
-  const month = date.toLocaleString("default", { month: "long" });
-  const year = date.getFullYear();
-  const weekday = date.toLocaleString("default", { weekday: "short" });
-  return `${day}${daySuffix} of ${month} (${weekday}) on ${year}`;
+  return new Date(dateString).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function formatShortDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
