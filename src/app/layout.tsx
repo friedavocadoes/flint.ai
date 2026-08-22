@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import "./interaction.css";
 import { ThemeProvider } from "@/components/theme-providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -30,23 +31,23 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={` ${outfit.variable} antialiased`}>
+      <body className={`${outfit.variable} antialiased`}>
         <GoogleOAuthProvider clientId={googleClientId}>
           <UserProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SidebarProvider className="flex flex-col">
-              <Navbar />
-              {children}
-              <Toaster richColors />
-              <Footer />
-            </SidebarProvider>
-          </ThemeProvider>
-        </UserProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <SidebarProvider className="flex flex-col">
+                <Navbar />
+                {children}
+                <Toaster richColors />
+                <Footer />
+              </SidebarProvider>
+            </ThemeProvider>
+          </UserProvider>
         </GoogleOAuthProvider>
       </body>
     </html>
