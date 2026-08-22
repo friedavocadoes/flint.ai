@@ -317,7 +317,7 @@ export default function Resume() {
               </div>
             </div>
           ) : !result ? (
-            <div className="grid lg:grid-cols-2 gap-6 items-start max-w-5xl mx-auto w-full">
+            <div className="grid lg:grid-cols-2 gap-6 items-start mx-auto w-full">
               <div className="order-1 lg:order-1">
                 <PDFPreview file={file} url={pdfUrl} />
                 {file && (
