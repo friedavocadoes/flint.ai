@@ -27,10 +27,7 @@ export default function GoogleLoginButton({
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND}/api/auth/google`,
-        {
-          idToken: credential,
-          credential,
-        },
+        { idToken: credential, credential },
       );
       const u = res.data.user;
       updateUser({
@@ -41,10 +38,23 @@ export default function GoogleLoginButton({
         avatar: u.avatar,
       } as any);
       toast.success(`Welcome, ${u.name}`);
-      // If new user without profile info, push to /hello else to prepare
-      // We don't know profile completeness here — let useUserExists handle, but push to /hello for first-time google users
-      // Check if backend user is newly created? For now push to prepare then profile check will show
-      setTimeout(() => router.push(routes.auth.hello), 100);
+
+      // Google auth returns the account; profile data lives in /auth/me.
+      // Existing users with a completed profile skip onboarding entirely.
+      try {
+        const profile = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND}/api/auth/me/${u.id}`,
+        );
+        const hasProfile = Boolean(
+          profile.data?.role &&
+            profile.data?.nationality &&
+            profile.data?.sex &&
+            Number(profile.data?.age) > 0,
+        );
+        router.push(hasProfile ? routes.prepare : routes.auth.hello);
+      } catch {
+        router.push(routes.auth.hello);
+      }
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || err.message || "Google login failed";
