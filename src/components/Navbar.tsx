@@ -55,7 +55,7 @@ export default function Navbar() {
           signupRoute: routes.auth.signupRoute,
         }}
       />
-      <div className="z-100 fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 z-10 backdrop-blur-md font-outfit">
+      <div className="z-100 fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
           <Link

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "formatter": {
+    "prettier": {
+      "command": ["npx", "prettier", "--write", "$FILE"],
+      "extensions": [".js", ".ts", ".tsx", ".jsx", ".json", ".css", ".md"]
+    }
+  },
+  "lsp": true,
+  "permission": {
+    "bash": "ask",
+    "edit": "allow",
+    "write": "allow"
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "backend/node_modules/**",
+      ".git/**",
+      "dist/**"
+    ]
+  },
+  "agent": {
+    "build": {
+      "description": "Default build agent for Flint.ai — Next.js frontend + Express backend",
+      "prompt": "You are working on Flint.ai, a career pathway assist SaaS (Next.js 16 + Express 5 + Mongoose 8 + Gemini 2.5-flash + Razorpay). Follow AGENTS.md architecture. Check .env contracts (NEXT_PUBLIC_BACKEND, GEMINI_API_KEY, MONGO_URI, RAZORPAY_*). Respect localStorage auth flow and Pathway(chat) model. Verify with npm run lint and npm run build before finishing.",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "plan": {
+      "description": "Planning agent — read-only exploration before edits",
+      "prompt": "You are in PLAN mode for Flint.ai. Do not edit files. Analyze src/app/*, backend/*, src/app/lib/geminiPrompt.ts, and AGENTS.md, then propose a step-by-step plan with file paths and risks. Focus on auth tech debt (plaintext passwords), subscriptionRoutes broken, and dual-deploy env handling.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": true
+      }
+    },
+    "frontend": {
+      "description": "Frontend specialist — Next App Router, shadcn, Tailwind, ReactFlow",
+      "prompt": "You are the Flint.ai frontend specialist. Work in src/. Use shadcn aliases @/* (components.json), Tailwind 4, stone theme, next-themes. Keep Navbar routes in sync with src/content/routes.js. For AI flows edit src/app/lib/geminiPrompt.ts and src/app/api/*/route.* together. Use sonner for toasts, not alert.",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "backend": {
+      "description": "Backend specialist — Express + Mongoose + Razorpay webhook",
+      "prompt": "You are the Flint.ai backend specialist. Work in backend/. ESM only (type: module). Mount routes in backend/app.js. Keep Payment post-save -> Subscription lifecycle intact. Razorpay webhook at /api/razorpay/webhook uses express.raw + HMAC verify. Fix subscriptionRoutes.js ESM typo if touched. Never commit .env.",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
+  "command": {
+    "audit-auth": {
+      "template": "Audit the auth flow: frontend src/context/userContext.tsx + src/hooks/protectedRoute.ts + src/components/Login.tsx + src/components/Signup.tsx vs backend backend/controllers/userController.js. Report plaintext password risk, localStorage bypass, and propose bcrypt + JWT fix without breaking current contract.",
+      "description": "Audit plaintext auth + localStorage tech debt",
+      "agent": "plan"
+    },
+    "test-payments": {
+      "template": "Test Razorpay flow: start backend (cd backend && npm run dev), verify POST /api/razorpayMain/create-order, check backend/webhooks/razorpayWebhook.js HMAC, and Payment->Subscription post-save. Use src/app/payTest/page.tsx as harness. Check Mongo Payment + Subscription docs.",
+      "description": "Razorpay payment lifecycle test"
+    },
+    "verify-build": {
+      "template": "Run verification: npm run lint, npm run build (note next.config ignores errors — run tsc --noEmit separately), and cd backend && node --check app.js. Summarize failures.",
+      "description": "Lint + build verification"
+    }
+  }
+}

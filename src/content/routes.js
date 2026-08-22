@@ -6,8 +6,8 @@ export default {
   mockInterviews: "#",
   discussions: "#",
   static: {
-    contact: "/contact",
-    issue: "/issues",
+    contact: "https://github.com/friedavocadoes",
+    issue: "https://github.com/friedavocadoes/flint.ai/issues/new/choose",
     documentation: "/documentation",
   },
   auth: {
