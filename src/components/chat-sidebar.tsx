@@ -15,6 +15,7 @@ import {
   SidebarMenuSkeleton,
   SidebarHeader,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import routes from "@/content/routes";
 
@@ -29,14 +30,22 @@ export function AppSidebar({
   onChatSelect?: (id: string | null) => void;
   selectedChatId?: string | null;
 }) {
-  // const [loading, setLoading] = useState(false);
+  const { setOpen, isMobile } = useSidebar();
+
+  const handleEnter = () => {
+    if (!isMobile) setOpen(true);
+  };
+  const handleLeave = () => {
+    if (!isMobile) setOpen(false);
+  };
 
   return (
-    <Sidebar
-      variant="sidebar"
-      collapsible="icon"
-      className="!top-14 !h-[calc(100svh-3.5rem)] border-r"
-    >
+    <div onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <Sidebar
+        variant="sidebar"
+        collapsible="icon"
+        className="mt-14 h-[calc(100svh-3.5rem)] border-r"
+      >
       <SidebarHeader className="flex h-10 flex-row items-center gap-2 border-b px-2 shrink-0">
         <SidebarTrigger className="h-7 w-7 shrink-0" />
         <span className="text-sm font-medium truncate group-data-[collapsible=icon]:hidden">History</span>
@@ -113,5 +122,6 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+    </div>
   );
 }

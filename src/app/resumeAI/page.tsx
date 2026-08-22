@@ -9,11 +9,11 @@ import {
 import { PDFPreview } from "@/components/resume/PDFPreview";
 import { ResumeHistorySidebar } from "@/components/resume/ResumeHistorySidebar";
 import { Button } from "@/components/ui/button";
-import { X, RotateCcw, Sparkles, Loader2, FileText } from "lucide-react";
+import { X, RotateCcw, Sparkles, Loader2, FileText, History, Plus, PanelLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useProtectedRoute } from "@/hooks/protectedRoute";
 import { useUserContext } from "@/context/userContext";
-import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
 
 type HistoryDoc = {
   _id: string;
@@ -33,6 +33,7 @@ export default function Resume() {
   const { user, loading: authLoading } = useUserContext();
   const { loading: guardLoading } = useProtectedRoute();
   const isAuthResolving = authLoading || guardLoading;
+  const { setOpen, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
 
   const [file, setFile] = useState<File | null>(null);
   const [role, setRole] = useState("");
@@ -78,6 +79,13 @@ export default function Resume() {
     if (user?.id) fetchHistory();
     else setHistoryLoading(false);
   }, [user, isAuthResolving, fetchHistory]);
+
+  // auto-close sidebar on mount so analysis is readable full-width. Desktop = collapsed icon, mobile = Sheet closed.
+  useEffect(() => {
+    if (isAuthResolving) return;
+    setOpen(false);
+    setOpenMobile(false);
+  }, [isAuthResolving, setOpen, setOpenMobile]);
 
   const saveHistory = async (
     structured: ResumeResult,
@@ -177,6 +185,9 @@ export default function Resume() {
     setResult(doc.result as ResumeResult);
     setRole(doc.role);
     setFile(null);
+    // auto-close sidebar so the analysis can be read properly
+    if (isMobile) setOpenMobile(false);
+    else setOpen(false);
   };
 
   const handleDeleteHistory = async (id: string) => {
@@ -245,9 +256,29 @@ export default function Resume() {
         onNewScan={handleNewScan}
       />
       <SidebarInset>
-        <div className="flex flex-col p-4 md:p-6 lg:p-8 pt-8 pb-20 w-full max-w-[1400px] mx-auto">
+        {/* Mobile: dedicated history trigger bar — separated from Navbar hamburger */}
+        <div className="md:hidden sticky top-14 z-20 flex items-center gap-2 border-b bg-background/80 backdrop-blur-md px-4 py-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleSidebar()}
+            className="gap-2"
+            aria-label="Open scan history"
+          >
+            <PanelLeft className="w-4 h-4" />
+            <History className="w-4 h-4" />
+            History
+            <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs">
+              {history.length}
+            </span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleNewScan} className="ml-auto gap-1.5">
+            <Plus className="w-4 h-4" /> New scan
+          </Button>
+        </div>
+        <div className="flex flex-col p-4 md:p-6 lg:p-8 pt-4 md:pt-8 pb-20 w-full max-w-[1400px] mx-auto">
           {/* Header */}
-          <div className="text-center mb-6 pt-16">
+          <div className="text-center mb-6 pt-4 md:pt-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
               <Sparkles className="w-3.5 h-3.5" /> Resume ATS Lab • private &
               saved
