@@ -125,15 +125,15 @@ export function ResumeForm({
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="default"
                   size="sm"
-                  className="h-7 text-xs px-2"
+                  className="h-7 text-xs px-2 mb-2 cursor-pointer"
                   onClick={() => setShowJd((v) => !v)}
                 >
                   <Lightbulb className="w-3.5 h-3.5 mr-1" />
                   {showJd ? "Hide job description" : "Add job description (better accuracy)"}
                 </Button>
-                <span className="text-[11px] text-muted-foreground hidden sm:inline">Paste JD for keyword-perfect scan</span>
+                <span className="text-[11px] text-muted-foreground hidden sm:inline mb-2">Paste JD for keyword-perfect scan</span>
               </div>
               {showJd && (
                 <div className="space-y-1.5">
