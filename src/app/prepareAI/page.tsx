@@ -57,12 +57,19 @@ export default function PathwayPage() {
 
   return (
     <>
-      <AppSidebar
-        chats={chats}
-        loading={loading}
-        onChatSelect={setSelectedChatId}
-        selectedChatId={selectedChatId}
-      />
+      {/*
+        The global Navbar owns the mobile (right-side) drawer. Keep the
+        PrepareAI history sidebar desktop-only so it doesn't mount a second
+        mobile Sheet against the same SidebarProvider/openMobile state.
+      */}
+      <div className="hidden md:block">
+        <AppSidebar
+          chats={chats}
+          loading={loading}
+          onChatSelect={setSelectedChatId}
+          selectedChatId={selectedChatId}
+        />
+      </div>
       <SidebarInset>
         <div className="flex flex-col p-4 md:p-6 lg:p-8 !pt-14 pb-20 w-full max-w-[1400px] mx-auto">
           {!selectedChat ? (
