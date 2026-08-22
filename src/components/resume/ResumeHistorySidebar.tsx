@@ -69,6 +69,7 @@ export function ResumeHistorySidebar({
           <SidebarTrigger className="h-7 w-7 shrink-0" />
           <span className="text-sm font-medium truncate group-data-[collapsible=icon]:hidden">Past scans</span>
         </SidebarHeader>
+
         <SidebarContent className="pt-2">
           <SidebarGroup>
             <SidebarGroupContent>
@@ -94,44 +95,69 @@ export function ResumeHistorySidebar({
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {loading
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <SidebarMenuItem key={i}>
-                        <SidebarMenuSkeleton showIcon={true} />
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <SidebarMenuItem key={i}>
+                      <SidebarMenuSkeleton showIcon={true} />
+                    </SidebarMenuItem>
+                  ))
+                ) : items.length === 0 ? (
+                  <div className="px-2 py-6 text-center group-data-[collapsible=icon]:hidden">
+                    <FileText className="w-6 h-6 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="text-xs font-medium">No scans yet</p>
+                    <p className="text-[11px] text-muted-foreground">Upload a PDF to start</p>
+                  </div>
+                ) : (
+                  [...items].map((it) => {
+                    const active = selectedId === it._id;
+                    return (
+                      <SidebarMenuItem key={it._id} className="group/item">
+                        <SidebarMenuButton
+                          onClick={() => onSelect(it._id)}
+                          isActive={active}
+                          tooltip={`${it.role} • ${it.atsScore ?? "—"}/100`}
+                          size="lg"
+                          className="h-auto min-h-[64px] py-2.5 px-2.5 items-start gap-3 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:min-h-8 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center"
+                        >
+                          <span className={`hidden group-data-[collapsible=icon]:grid place-items-center w-7 h-7 rounded-lg border shrink-0 ${scoreColor(it.atsScore)}`}>
+                            <FileText className="w-3.5 h-3.5" />
+                          </span>
+                          <span className={`w-9 h-9 rounded-xl grid place-items-center text-xs font-bold shrink-0 border group-data-[collapsible=icon]:hidden ${scoreColor(it.atsScore)}`}>
+                            {it.atsScore ?? "—"}
+                          </span>
+                          <div className="flex-1 min-w-0 text-left space-y-1 group-data-[collapsible=icon]:hidden">
+                            <p className="text-sm font-medium leading-none truncate pr-2">{it.role}</p>
+                            <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+                              <FileText className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{it.fileName || "resume.pdf"}</span>
+                            </p>
+                            {it.topFix && <p className="text-[11px] leading-snug line-clamp-2 text-muted-foreground/80">{it.topFix}</p>}
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1 pt-0.5">
+                              <Clock className="w-3 h-3" />
+                              {new Date(it.createdAt).toLocaleDateString()} • {new Date(it.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                        </SidebarMenuButton>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1.5 h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(it._id);
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </SidebarMenuItem>
-                    ))
-                  : items.length === 0
-                    ? <div className="px-2 py-6 text-center"><FileText className="w-6 h-6 mx-auto text-muted-foreground/40 mb-2" /><p className="text-xs font-medium">No scans yet</p><p className="text-[11px] text-muted-foreground">Upload a PDF to start</p></div>
-                    : [...items].map((it) => {
-                        const active = selectedId === it._id;
-                        return (
-                          <SidebarMenuItem key={it._id} className="group/item">
-                            <SidebarMenuButton
-                              onClick={() => onSelect(it._id)}
-                              isActive={active}
-                              tooltip={`${it.role} • ${it.atsScore ?? "—"}/100`}
-                              size="lg"
-                              className="h-auto min-h-[64px] py-2.5 px-2.5 items-start gap-3 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:min-h-8 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center"
-                            >
-                              <span className={`hidden group-data-[collapsible=icon]:grid place-items-center w-7 h-7 rounded-lg border shrink-0 ${scoreColor(it.atsScore)}`}><FileText className="w-3.5 h-3.5" /></span>
-                              <span className={`w-9 h-9 rounded-xl grid place-items-center text-xs font-bold shrink-0 border group-data-[collapsible=icon]:hidden ${scoreColor(it.atsScore)}`}>{it.atsScore ?? "—"}</span>
-                              <div className="flex-1 min-w-0 text-left space-y-1 group-data-[collapsible=icon]:hidden">
-                                <p className="text-sm font-medium leading-none truncate pr-2">{it.role}</p>
-                                <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate"><FileText className="w-3 h-3 shrink-0" /><span className="truncate">{it.fileName || "resume.pdf"}</span></p>
-                                {it.topFix && <p className="text-[11px] leading-snug line-clamp-2 text-muted-foreground/80">{it.topFix}</p>}
-                                <p className="text-[10px] text-muted-foreground flex items-center gap-1 pt-0.5"><Clock className="w-3 h-3" />{new Date(it.createdAt).toLocaleDateString()} • {new Date(it.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-                              </div>
-                            </SidebarMenuButton>
-                            <Button variant="ghost" size="icon" className="absolute right-1 top-1.5 h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden" onClick={(e) => { e.stopPropagation(); onDelete(it._id); }}>
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </SidebarMenuItem>
-                        );
-                      })}
+                    );
+                  })
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
