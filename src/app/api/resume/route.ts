@@ -30,9 +30,40 @@ export async function POST(req: NextRequest) {
           ],
         },
       ],
+      config: {
+        responseMimeType: "application/json",
+      },
     });
 
-    return NextResponse.json({ output: response.text });
+    const raw = response.text ?? "";
+    let parsed: any = null;
+    let output: string | null = null;
+    try {
+      parsed = JSON.parse(raw);
+      // Normalize: ensure atsScore equals breakdown sum if provided, clamp 0-100
+      if (parsed?.atsScore == null && parsed?.breakdown) {
+        parsed.atsScore = parsed.breakdown.reduce((s: number, b: any) => s + (Number(b.score) || 0), 0);
+      }
+      if (typeof parsed.atsScore === "number") {
+        parsed.atsScore = Math.max(0, Math.min(100, Math.round(parsed.atsScore)));
+      }
+    } catch {
+      // fallback: try repair, else return raw markdown as output
+      try {
+        const { jsonrepair } = await import("jsonrepair");
+        const repaired = jsonrepair(raw);
+        parsed = JSON.parse(repaired);
+      } catch {
+        output = raw;
+      }
+    }
+
+    if (parsed) {
+      // keep both structured + raw markdown for legacy viewers
+      if (!parsed.rawMarkdown && !parsed.output) parsed.rawMarkdown = raw;
+      return NextResponse.json({ ...parsed, output: parsed.rawMarkdown ?? output ?? raw });
+    }
+    return NextResponse.json({ output: output ?? raw });
   } catch (err: any) {
     console.error(err);
     return NextResponse.json({ error: err.message }, { status: 500 });

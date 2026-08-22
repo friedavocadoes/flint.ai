@@ -94,35 +94,46 @@ Rules:
 }
 
 export function resumeAIPrompt(promptData: resumeAIPromptType) {
-  return `You are an **ATS (Applicant Tracking System) Resume Evaluator**.
+  return `You are an ATS + hiring-manager resume reviewer for role ${promptData.role} ${promptData.jd ? `with JD: ${promptData.jd}` : ""}. You get a PDF resume.
 
-The candidate is applying for the role of **${promptData.role}**.  
-${promptData.jd && `Job Description (for context): ${promptData.jd}`}
+Return STRICT JSON only (no markdown fences) with shape:
 
-You will receive the candidate's resume as a **PDF**.
+{
+  "atsScore": 0-100 integer (sum of breakdown),
+  "verdict": "2-3 sentence brutally honest chance summary",
+  "summary": "≤18 word hook",
+  "breakdown": [
+    { "label": "Impact & Metrics", "score": 0-20, "max": 20, "feedback": "15w blunt feedback" },
+    { "label": "Keywords & Skills", "score": 0-25, "max": 25, "feedback": "..." },
+    { "label": "Structure & Formatting", "score": 0-20, "max": 20, "feedback": "..." },
+    { "label": "Relevance & Brevity", "score": 0-20, "max": 20, "feedback": "..." },
+    { "label": "Language & Clarity", "score": 0-15, "max": 15, "feedback": "..." }
+  ],
+  "keyFixes": [
+    { "title": "≤8w fix title", "desc": "20-28w actionable before→after example", "priority": "high|medium|low", "where": "Top|Experience|Skills|Formatting" }
+  ],
+  "strengths": [
+    { "title": "Strength title", "desc": "12-18w evidence" }
+  ],
+  "keywordMatch": {
+    "present": ["React","TypeScript"],
+    "missing": ["GraphQL","Testing"],
+    "suggestions": ["Add GraphQL via Apollo snippet in Projects"]
+  },
+  "highlights": [
+    { "page": 1, "section": "Experience • Intern @XYZ", "issue": "No metrics — add 2 numbers" }
+  ],
+  "nextSteps": ["Rewrite bullets STAR+numbers","Add 5 target keywords to Skills","Quantify edu projects"],
+  "rawMarkdown": "# ATS Score (for ${promptData.role}): XX/100\\n## Key Fixes ... full markdown fallback with same content (for legacy)"
+}
 
-### Your Output (in Markdown):
-# **ATS Score (for ${promptData.role}): XX/100**
-
-Provide ONLY the following sections, each brutally concise and critical:
-
-## 🔑 Key Fixes (Top Priorities)
-- List the **3-5 most urgent changes** needed to beat ATS and recruiters (missing keywords, weak phrasing, format issues, metrics, etc.).  
-- Be blunt and actionable—no generic advice.
-
-## ✅ Strengths
-- 3-5 specific points where the resume performs well (structure, impact, role alignment, quantifiable results, etc.).
-
-## ⚡ Keyword Match
-- **Present:** Important keywords/skills from the job description already in the resume.  
-- **Missing:** High-value keywords/skills that are absent or weak.
-
-## 🏁 Verdict
-- A **2-3 sentence** direct summary of the resume's chances (e.g., “Likely rejected without X,” or “Strong ATS pass but weak recruiter appeal”).
-
-### Rules
-- Be **role-aware**.  
-- Avoid fluff or explanations—**only critical insights**.  
-- Use **Markdown headings and bullet points** for clarity.
-`;
+Rules:
+- atsScore = sum(breakdown.score). Be harsh: intern avg 45-60, strong 75+.
+- keyFixes 3-5 ordered high→low, role ${promptData.role} specific, blunt.
+- strengths 3-4 evidence-based.
+- keywordMatch 4-8 each, infer stack for ${promptData.role}.
+- highlights 2-3 granular section pointers like "Page 1, Header" or "Skills block".
+- nextSteps 3 immediate 30-min actions.
+- rawMarkdown must also contain markdown with # ATS Score XX/100 and same sections.
+- Escape JSON strings, no fences.`;
 }
