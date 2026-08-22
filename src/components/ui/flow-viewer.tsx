@@ -15,7 +15,13 @@ import ReactFlow, {
 import { Button } from "./button";
 import { PlusCircleIcon, Trash } from "lucide-react";
 
-export default function CareerFlowchart({ data }: { data: PathwayData }) {
+export default function CareerFlowchart({
+  data,
+  readOnly = false,
+}: {
+  data: PathwayData;
+  readOnly?: boolean;
+}) {
   const nodeSpacingX = 100;
   const nodeSpacingY = 100;
 
@@ -117,43 +123,50 @@ export default function CareerFlowchart({ data }: { data: PathwayData }) {
   };
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodeClick={onNodeClick}
-        onNodeDoubleClick={onNodeDoubleClick}
-        fitView
-      >
-        {/* <MiniMap /> */}
-        <Controls />
-        <Background gap={20} />
-      </ReactFlow>
-      <div className="flex mt-2 gap-2 justify-center">
-        <Button
-          variant="secondary"
-          onClick={addNode}
-          className="cursor-pointer"
+    <div className="flex flex-col h-full w-full min-h-0">
+      <div className="flex-1 min-h-0 relative rounded-lg overflow-hidden border bg-background">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={readOnly ? undefined : onNodesChange}
+          onEdgesChange={readOnly ? undefined : onEdgesChange}
+          onConnect={readOnly ? undefined : onConnect}
+          onNodeClick={onNodeClick}
+          onNodeDoubleClick={readOnly ? undefined : onNodeDoubleClick}
+          nodesDraggable={!readOnly}
+          nodesConnectable={!readOnly}
+          elementsSelectable={!readOnly}
+          fitView
+          proOptions={{ hideAttribution: true }}
         >
-          <PlusCircleIcon />
-          Create Node
-        </Button>
-
-        <Button
-          onClick={deleteSelectedNode}
-          disabled={!selectedNodeId}
-          variant="destructive"
-          className={`cursor-pointer ${
-            selectedNodeId && "hover:opacity-90 transition duration-200"
-          }`}
-        >
-          <Trash />
-          Delete Node
-        </Button>
+          <Controls className="!bg-background !border !shadow-sm" />
+          <Background gap={20} color="hsl(var(--muted-foreground) / 0.15)" />
+        </ReactFlow>
+        {readOnly && stagesWithProgressHint(data)}
       </div>
+      {!readOnly && (
+        <div className="flex gap-2 justify-center pt-3 shrink-0">
+          <Button variant="secondary" onClick={addNode} size="sm" className="gap-1.5">
+            <PlusCircleIcon className="w-4 h-4" />
+            Create Node
+          </Button>
+          <Button
+            onClick={deleteSelectedNode}
+            disabled={!selectedNodeId}
+            variant="destructive"
+            size="sm"
+            className="gap-1.5"
+          >
+            <Trash className="w-4 h-4" />
+            Delete
+          </Button>
+        </div>
+      )}
     </div>
   );
+
+  function stagesWithProgressHint(_data: PathwayData) {
+    // subtle helper so readOnly mode still shows small hint
+    return null;
+  }
 }

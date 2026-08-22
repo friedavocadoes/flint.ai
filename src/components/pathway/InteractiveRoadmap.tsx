@@ -149,20 +149,28 @@ export function InteractiveRoadmap({
 
         {/* RIGHT: sticky */}
         <div className="hidden lg:block sticky top-[72px] space-y-4">
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Roadmap</CardTitle>
+          <Card className="overflow-hidden flex flex-col">
+            <CardHeader className="pb-2 shrink-0">
+              <CardTitle className="text-sm flex items-center justify-between">
+                Roadmap
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  {completedStageIds.size}/{stages.length} done
+                </span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="h-[320px] p-2">
-              <CareerFlowchart
-                data={{
-                  stages: stages.map((s) => ({
-                    id: s.id,
-                    title: (completedStageIds.has(s.id) ? "✓ " : "") + s.title,
-                  })),
-                  connections: chat.flowjson?.pathwayData?.connections ?? [],
-                }}
-              />
+            <CardContent className="h-[360px] p-0 flex flex-col min-h-0">
+              <div className="flex-1 min-h-0 p-2">
+                <CareerFlowchart
+                  readOnly
+                  data={{
+                    stages: stages.map((s) => ({
+                      id: s.id,
+                      title: (completedStageIds.has(s.id) ? "✓ " : "") + s.title,
+                    })),
+                    connections: chat.flowjson?.pathwayData?.connections ?? [],
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
 

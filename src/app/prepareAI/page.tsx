@@ -70,15 +70,22 @@ export default function PathwayPage() {
         onChatSelect={setSelectedChatId}
         selectedChatId={selectedChatId}
       />
-      <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer " />
-      <div className="flex flex-col p-4 pl-1 mt-12 mb-20 w-full">
+      <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer fixed z-20" />
+      <div className="flex flex-col px-4 md:px-6 lg:px-8 mt-16 mb-20 w-full max-w-[1400px] mx-auto">
         {/* conditional display here */}
         {!selectedChat ? (
-          <div className="ml-6">
-            {/* Title */}
-            <h2 className="mx-auto text-2xl font-bold mb-4">
-              Create a new Pathway
-            </h2>
+          <div className="w-full">
+            <div className="max-w-3xl mx-auto text-center mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Where do you want to go?</h1>
+              <p className="text-sm md:text-[15px] text-muted-foreground mt-3 max-w-[60ch] mx-auto leading-relaxed">
+                Answer 6 quick prompts. We&apos;ll forge a quest-based roadmap you can actually tick off — with honest chances, XP, and links you can open today.
+              </p>
+              {chats.length > 0 && !loading && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  You have {chats.length} roadmap{chats.length !== 1 && "s"} • pick one from the sidebar or forge a new one
+                </p>
+              )}
+            </div>
 
             <PromptForm
               onChatCreated={async (newChatId: string) => {
@@ -95,8 +102,8 @@ export default function PathwayPage() {
             />
           </div>
         ) : (
-          <div className="ml-3 md:ml-6">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="w-full">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               <PromptDisplay data={selectedChat.promptData} />
               <AlertDisplay
                 id={selectedChat._id}
@@ -105,6 +112,9 @@ export default function PathwayPage() {
                   setSelectedChatId(null);
                 }}
               />
+              <span className="ml-auto hidden sm:inline text-xs text-muted-foreground">
+                {new Date(selectedChat.createdAt ?? "").toLocaleDateString()} • {selectedChat.promptData.role}
+              </span>
             </div>
             <InteractiveRoadmap
               chat={selectedChat}

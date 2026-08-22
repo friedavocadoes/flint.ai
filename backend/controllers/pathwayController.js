@@ -116,55 +116,72 @@ export const updateProgress = async (req, res) => {
     const chat = pathway.chats.id(id);
     if (!chat) return res.status(404).json({ error: "Chat not found" });
 
-    if (!chat.progress) chat.progress = { completedStageIds: [], completedTaskIds: [], xpEarned: 0 };
+    // Ensure progress defaults
+    const curStageIds = chat.progress?.completedStageIds ?? [];
+    const curTaskIds = chat.progress?.completedTaskIds ?? [];
+    let nextStageIds = Array.isArray(completedStageIds) ? [...completedStageIds] : [...curStageIds];
+    let nextTaskIds = Array.isArray(completedTaskIds) ? [...completedTaskIds] : [...curTaskIds];
 
-    // Bulk replace mode (used by frontend optimistic sync)
-    if (Array.isArray(completedStageIds)) chat.progress.completedStageIds = completedStageIds;
-    if (Array.isArray(completedTaskIds)) chat.progress.completedTaskIds = completedTaskIds;
-
-    // Incremental mode
+    // Incremental mode (toggles)
     if (stageId) {
-      const set = new Set(chat.progress.completedStageIds || []);
+      const set = new Set(nextStageIds);
       if (action === "complete_stage" || action === "complete") set.add(stageId);
       else if (action === "uncomplete_stage" || action === "uncomplete") set.delete(stageId);
       else if (action === "toggle") {
         if (set.has(stageId)) set.delete(stageId);
         else set.add(stageId);
+      } else if (!Array.isArray(completedStageIds)) {
+        // default toggle when only stageId provided without bulk arrays
+        if (set.has(stageId)) set.delete(stageId);
+        else set.add(stageId);
       }
-      chat.progress.completedStageIds = [...set];
+      nextStageIds = [...set];
     }
     if (taskId) {
-      const tSet = new Set(chat.progress.completedTaskIds || []);
+      const tSet = new Set(nextTaskIds);
       if (action === "complete_task" || action === "complete") tSet.add(taskId);
       else if (action === "uncomplete_task" || action === "uncomplete") tSet.delete(taskId);
       else if (action === "toggle_task" || action === "toggle") {
         if (tSet.has(taskId)) tSet.delete(taskId);
         else tSet.add(taskId);
-      } else {
-        // default task toggle
-        if (!stageId) {
-          if (tSet.has(taskId)) tSet.delete(taskId);
-          else tSet.add(taskId);
-        }
+      } else if (!Array.isArray(completedTaskIds)) {
+        if (tSet.has(taskId)) tSet.delete(taskId);
+        else tSet.add(taskId);
       }
-      chat.progress.completedTaskIds = [...tSet];
+      nextTaskIds = [...tSet];
     }
 
     // recalc xp: sum stage xp for completed stages + 10 per completed task
     let xp = 0;
-    if (chat.flowjson?.pathwayData?.stages) {
-      for (const st of chat.flowjson.pathwayData.stages) {
-        if ((chat.progress.completedStageIds || []).includes(st.id)) xp += st.xp || 100;
-      }
+    const stages = chat.flowjson?.pathwayData?.stages || [];
+    for (const st of stages) {
+      if (nextStageIds.includes(String(st.id))) xp += Number(st.xp) || 100;
     }
-    xp += (chat.progress.completedTaskIds || []).length * 10;
-    chat.progress.xpEarned = xp;
-    chat.progress.lastActiveAt = new Date();
-    if (!chat.progress.startedAt) chat.progress.startedAt = new Date();
+    xp += nextTaskIds.length * 10;
 
-    await pathway.save();
-    res.json({ progress: chat.progress, chatId: id });
+    const now = new Date();
+    const startedAt = chat.progress?.startedAt || now;
+
+    // Atomic update via positional operator — avoids subdoc save validation issues
+    const updated = await Pathway.findOneAndUpdate(
+      { "chats._id": id },
+      {
+        $set: {
+          "chats.$.progress.completedStageIds": nextStageIds,
+          "chats.$.progress.completedTaskIds": nextTaskIds,
+          "chats.$.progress.xpEarned": xp,
+          "chats.$.progress.lastActiveAt": now,
+          "chats.$.progress.startedAt": startedAt,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Chat not found after update" });
+    const updatedChat = updated.chats.id(id);
+    res.json({ progress: updatedChat.progress, chatId: id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("updateProgress error:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
   }
 };
