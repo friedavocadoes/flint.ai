@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserContext } from "@/context/userContext";
+import { SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./mobile-sidebar";
 import routes from "@/content/routes";
 
@@ -47,6 +48,13 @@ export default function Navbar() {
 
   return (
     <>
+      <AppSidebar
+        user={user}
+        routes={{
+          loginRoute: routes.auth.loginRoute,
+          signupRoute: routes.auth.signupRoute,
+        }}
+      />
       <div className="z-100 fixed w-full top-0 h-14 bg-background/40  flex items-center px-4 md:px-10 backdrop-blur-md font-outfit">
         {/* left section */}
         <div className="flex justify-center items-center ">
@@ -173,15 +181,9 @@ export default function Navbar() {
           <ModeToggle />
         </div>
 
-        {/* mobile hamburger - independent nav drawer, separated from page sidebars */}
-        <div className="md:hidden flex ml-auto items-center">
-          <AppSidebar
-            user={user}
-            routes={{
-              loginRoute: routes.auth.loginRoute,
-              signupRoute: routes.auth.signupRoute,
-            }}
-          />
+        {/* mobile hamburger */}
+        <div className="md:hidden  flex ml-auto items-center">
+          <SidebarTrigger hamburger={true} className="scale-130" />
         </div>
       </div>
     </>

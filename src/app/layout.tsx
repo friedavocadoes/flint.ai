@@ -39,7 +39,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SidebarProvider defaultOpen={false} className="flex flex-col">
+            <SidebarProvider className="flex flex-col">
               <Navbar />
               {children}
               <Toaster richColors />
