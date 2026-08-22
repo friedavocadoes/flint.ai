@@ -29,11 +29,13 @@ export function AppSidebar({
   onChatSelect?: (id: string | null) => void;
   selectedChatId?: string | null;
 }) {
+  // const [loading, setLoading] = useState(false);
+
   return (
     <Sidebar
       variant="sidebar"
       collapsible="icon"
-      className="!top-16 !h-[calc(100svh-4rem)] border-r"
+      className="!top-14 !h-[calc(100svh-3.5rem)] border-r"
     >
       <SidebarHeader className="flex h-10 flex-row items-center gap-2 border-b px-2 shrink-0">
         <SidebarTrigger className="h-7 w-7 shrink-0" />
@@ -41,6 +43,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
+          {/* add button starts */}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Add" className="mt-1 mb-2">
@@ -57,6 +60,7 @@ export function AppSidebar({
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
+          {/* add button ends */}
         </SidebarGroup>
 
         <SidebarGroup>
