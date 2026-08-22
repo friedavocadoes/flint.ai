@@ -1,6 +1,7 @@
 "use client";
 import { CircleFadingArrowUp, Plus, ChartNetwork } from "lucide-react";
 import type { Chat } from "@/types/flow-viewer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import {
   Sidebar,
@@ -29,7 +30,11 @@ export function AppSidebar({
   onChatSelect?: (id: string | null) => void;
   selectedChatId?: string | null;
 }) {
-  // const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
+
+  // PrepareAI has its own desktop history sidebar. The Navbar owns the
+  // mobile navigation drawer, so never mount this sidebar as a second mobile Sheet.
+  if (isMobile) return null;
 
   return (
     <Sidebar
@@ -43,7 +48,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          {/* add button starts */}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Add" className="mt-1 mb-2">
@@ -60,7 +64,6 @@ export function AppSidebar({
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
-          {/* add button ends */}
         </SidebarGroup>
 
         <SidebarGroup>
