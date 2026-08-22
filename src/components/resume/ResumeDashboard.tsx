@@ -78,11 +78,16 @@ export function ResumeDashboard({
             <ATSGauge score={score} />
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">
                   ATS Score for {role || data.role || "this role"}
-                  <span className="text-xs font-normal px-2.5 py-1 rounded-full bg-muted border">{data.summary ?? "Quick scan"}</span>
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{data.verdict}</p>
+                {data.summary && (
+                  <div className="mt-2 inline-flex max-w-full items-start gap-2 px-3 py-2 rounded-lg bg-muted/60 border text-sm leading-relaxed">
+                    <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span className="break-words">{data.summary}</span>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{data.verdict}</p>
               </div>
 
               {data.breakdown && (

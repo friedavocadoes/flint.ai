@@ -5,7 +5,7 @@ import "reactflow/dist/style.css";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/chat-sidebar";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import AlertDisplay from "@/components/alertDisplay";
 import { PromptForm } from "@/components/promptForm"; // Input form
 import { PromptDisplay } from "@/components/iDisplay"; // The i display thingy
@@ -70,8 +70,8 @@ export default function PathwayPage() {
         onChatSelect={setSelectedChatId}
         selectedChatId={selectedChatId}
       />
-      <SidebarTrigger className="scale-120 mt-17 ml-2 cursor-pointer fixed z-20" />
-      <div className="flex flex-col px-4 md:px-6 lg:px-8 mt-16 mb-20 w-full max-w-[1400px] mx-auto">
+      <SidebarInset>
+        <div className="flex flex-col p-4 md:p-6 lg:p-8 pt-14 pb-20 w-full max-w-[1400px] mx-auto">
         {/* conditional display here */}
         {!selectedChat ? (
           <div className="w-full">
@@ -124,7 +124,8 @@ export default function PathwayPage() {
             />
           </div>
         )}
-      </div>
+        </div>
+      </SidebarInset>
     </>
   );
 }

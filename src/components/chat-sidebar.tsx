@@ -13,6 +13,8 @@ import {
   SidebarMenuItem,
   SidebarFooter,
   SidebarMenuSkeleton,
+  SidebarHeader,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import routes from "@/content/routes";
 
@@ -33,18 +35,26 @@ export function AppSidebar({
     <Sidebar
       variant="sidebar"
       collapsible="icon"
-      className="mt-14 z-2 pb-14 fixed"
+      className="!top-14 !h-[calc(100svh-3.5rem)] border-r"
     >
+      <SidebarHeader className="flex h-10 flex-row items-center gap-2 border-b px-2 shrink-0">
+        <SidebarTrigger className="h-7 w-7 shrink-0" />
+        <span className="text-sm font-medium truncate group-data-[collapsible=icon]:hidden">History</span>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           {/* add button starts */}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Add" className="mt-1 mb-2">
-                <SidebarMenuButton asChild onClick={() => onChatSelect?.(null)}>
-                  <a href="">
+                <SidebarMenuButton
+                  asChild
+                  onClick={() => onChatSelect?.(null)}
+                  tooltip="New career plan"
+                >
+                  <a href="" onClick={(e) => e.preventDefault()} className="flex items-center gap-2">
                     <Plus />
-                    <span>Plan a new career </span>
+                    <span className="group-data-[collapsible=icon]:hidden">Plan a new career</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -68,19 +78,18 @@ export function AppSidebar({
                       <SidebarMenuButton
                         asChild
                         onClick={() => onChatSelect?.(chat._id)}
-                        className={`${
-                          chat._id === selectedChatId &&
-                          "bg-stone-300 dark:bg-stone-600"
-                        }`}
+                        isActive={chat._id === selectedChatId}
+                        tooltip={
+                          chat.title
+                            ? chat.title
+                            : `${chat.promptData.role} at ${chat.promptData.targetCompanies}`
+                        }
+                        className="h-auto min-h-8 py-2"
                       >
-                        <div className="cursor-pointer">
-                          <ChartNetwork />
-                          <span>
-                            {chat.title
-                              ? chat.title
-                              : chat.promptData.role +
-                                " at " +
-                                chat.promptData.targetCompanies}
+                        <div className="flex items-center gap-2 cursor-pointer min-w-0 w-full">
+                          <ChartNetwork className="shrink-0" />
+                          <span className="truncate group-data-[collapsible=icon]:hidden">
+                            {chat.title ? chat.title : `${chat.promptData.role} at ${chat.promptData.targetCompanies}`}
                           </span>
                         </div>
                       </SidebarMenuButton>
