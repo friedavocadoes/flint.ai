@@ -63,7 +63,7 @@ export default function PathwayPage() {
         selectedChatId={selectedChatId}
       />
       <SidebarInset>
-        <div className="flex flex-col p-4 md:p-6 lg:p-8 !pt-14 pb-20 w-full max-w-[1400px] mx-auto">
+        <div className="flex flex-col p-4 md:p-6 lg:p-8 !pt-20 pb-20 w-full max-w-[1400px] mx-auto">
           {!selectedChat ? (
             <div className="w-full">
               <div className="max-w-3xl mx-auto text-center mb-6">
