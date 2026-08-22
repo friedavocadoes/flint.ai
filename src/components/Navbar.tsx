@@ -15,7 +15,6 @@ import {
   LogOut,
   User,
   CircleFadingArrowUp,
-  Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -47,42 +46,92 @@ export default function Navbar() {
 
   return (
     <>
-      <AppSidebar user={user} routes={{ loginRoute: routes.auth.loginRoute, signupRoute: routes.auth.signupRoute }} />
+      <AppSidebar
+        user={user}
+        routes={{
+          loginRoute: routes.auth.loginRoute,
+          signupRoute: routes.auth.signupRoute,
+        }}
+      />
       <div className="z-[100] fixed w-full top-0 h-14 bg-background/40 flex items-center px-4 md:px-10 backdrop-blur-md font-outfit">
         <div className="flex items-center min-w-0">
           <Link href="/" className="group flex items-center gap-1.5">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 text-white shadow-md shadow-violet-500/20 transition group-hover:scale-105">
-              <Sparkles className="h-3.5 w-3.5" />
-            </span>
-            <p className="font-bold text-2xl bg-gradient-to-tr dark:from-white/80 dark:to-white/20 from-black/70 to-black/20 bg-clip-text text-transparent drop-shadow-[0_2px_16px_rgba(255,255,255,0.25)] transition-all duration-300">
+            <p
+              className="font-bold text-2xl bg-gradient-to-tr 
+              dark:from-white/70 dark:to-white/20 dark:hover:text-stone-300
+              from-black/70 to-black/20 hover:text-stone-800
+              bg-clip-text text-transparent drop-shadow-[0_2px_16px_rgba(255,255,255,0.25)]
+              transition-all duration-400 ease-in-out
+              "
+            >
               Flint.ai
             </p>
           </Link>
 
-          {paths.map((path) => pathname === path.p && (
-            <div className="flex items-center" key={path.p}>
-              <span className="ml-2 text-xl font-semibold text-muted-foreground/60">/</span>
-              <span className="ml-1 text-xl font-semibold text-muted-foreground">{path.name.replace("/", "")}</span>
-            </div>
-          ))}
+          {paths.map(
+            (path) =>
+              pathname === path.p && (
+                <div className="flex items-center" key={path.p}>
+                  <span className="ml-2 text-xl font-semibold text-muted-foreground/60">
+                    /
+                  </span>
+                  <span className="ml-1 text-xl font-semibold text-muted-foreground">
+                    {path.name.replace("/", "")}
+                  </span>
+                </div>
+              ),
+          )}
         </div>
 
         <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
           <Menu setActive={setActive} className="flex space-x-3 md:space-x-6">
             <MenuItem setActive={setActive} active={active} item="Tools">
               <div className="text-stone-400 text-sm grid grid-cols-2 gap-10 p-4">
-                <ProductItem title="Resume Analyser" href={routes.resume} src="/thumbs/resume.svg" description="Analyze and score your Resume with AI to bust through the ATS." />
-                <ProductItem title="Prepare with Flint" href={routes.prepare} src="/thumbs/prepare.svg" description="Create a career roadmap and land your dream job." />
-                <ProductItem title="Mock Interviews" href={routes.mockInterviews} src="/thumbs/interview.svg" description="Prepare yourself with sample interviews created with AI." isComingSoon />
-                <ProductItem title="Discussions" href={routes.discussions} src="/thumbs/discussions.svg" description="Engage in curiosity driven discussions." isComingSoon />
+                <ProductItem
+                  title="Resume Analyser"
+                  href={routes.resume}
+                  src="/thumbs/resume.svg"
+                  description="Analyze and score your Resume with AI to bust through the ATS."
+                />
+                <ProductItem
+                  title="Prepare with Flint"
+                  href={routes.prepare}
+                  src="/thumbs/prepare.svg"
+                  description="Create a career roadmap and land your dream job."
+                />
+                <ProductItem
+                  title="Mock Interviews"
+                  href={routes.mockInterviews}
+                  src="/thumbs/interview.svg"
+                  description="Prepare yourself with sample interviews created with AI."
+                  isComingSoon
+                />
+                <ProductItem
+                  title="Discussions"
+                  href={routes.discussions}
+                  src="/thumbs/discussions.svg"
+                  description="Engage in curiosity driven discussions."
+                  isComingSoon
+                />
               </div>
             </MenuItem>
             <MenuItem setActive={setActive} active={active} item="Support">
               <div className="flex flex-col space-y-4 text-sm">
-                <ProductItem title="Go premium" href={routes.sub} src="/thumbs/pro.svg" description="Solo • Team • Business" />
-                <HoveredLink href={routes.static.contact}>Contact us</HoveredLink>
-                <HoveredLink href={routes.static.issue}>Raise an Issue</HoveredLink>
-                <HoveredLink href={routes.static.documentation}>Documentation</HoveredLink>
+                <ProductItem
+                  title="Go premium"
+                  href={routes.sub}
+                  src="/thumbs/pro.svg"
+                  description="Solo • Team • Business"
+                />
+                <HoveredLink href={routes.static.contact}>
+                  Contact us
+                </HoveredLink>
+                <HoveredLink href={routes.static.issue}>
+                  Raise an Issue
+                </HoveredLink>
+                <HoveredLink href={routes.static.documentation}>
+                  Documentation
+                </HoveredLink>
               </div>
             </MenuItem>
           </Menu>
@@ -91,45 +140,109 @@ export default function Navbar() {
         <div className="hidden ml-auto md:flex items-center">
           {!user ? (
             <>
-              <Button className="mx-2 cursor-pointer hover:opacity-95" onClick={() => router.push(routes.auth.signupRoute)}><UserPlus />Sign Up</Button>
-              <Button className="mx-2 cursor-pointer hover:opacity-95" variant="secondary" onClick={() => router.push(routes.auth.loginRoute)}><LogIn />Log in</Button>
+              <Button
+                className="mx-2 cursor-pointer hover:opacity-95"
+                onClick={() => router.push(routes.auth.signupRoute)}
+              >
+                <UserPlus />
+                Sign Up
+              </Button>
+              <Button
+                className="mx-2 cursor-pointer hover:opacity-95"
+                variant="secondary"
+                onClick={() => router.push(routes.auth.loginRoute)}
+              >
+                <LogIn />
+                Log in
+              </Button>
             </>
           ) : (
             <div className="mx-2 cursor-pointer">
-              <UserDropDown name={user.name} email={user.email} pro={user?.pro} onLogout={clearUser} />
+              <UserDropDown
+                name={user.name}
+                email={user.email}
+                pro={user?.pro}
+                onLogout={clearUser}
+              />
             </div>
           )}
           <ModeToggle />
         </div>
 
         <div className="md:hidden flex ml-auto items-center">
-          <SidebarTrigger hamburger={true} className="h-10 w-10 rounded-xl border border-white/10 bg-background/50 shadow-lg backdrop-blur-md transition hover:border-violet-400/40 hover:bg-violet-500/10" />
+          <SidebarTrigger
+            hamburger={true}
+            className="h-10 w-10 rounded-xl border border-white/10 bg-background/50 shadow-lg backdrop-blur-md transition hover:border-violet-400/40 hover:bg-violet-500/10"
+          />
         </div>
       </div>
     </>
   );
 }
 
-export function UserDropDown({ name, email, pro, onLogout }: { name: string; email: string; pro: boolean | undefined; onLogout: () => void }) {
+export function UserDropDown({
+  name,
+  email,
+  pro,
+  onLogout,
+}: {
+  name: string;
+  email: string;
+  pro: boolean | undefined;
+  onLogout: () => void;
+}) {
   const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline"><User />{name}</Button>
+        <Button variant="outline">
+          <User />
+          {name}
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>Email: {email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push(routes.profile)}><User /><span>Profile</span></DropdownMenuItem>
-          {pro ? <DropdownMenuItem><CreditCard /><span>Billing</span></DropdownMenuItem> : <DropdownMenuItem onClick={() => router.push(routes.sub)}><CircleFadingArrowUp /><span>Upgrade to Pro</span></DropdownMenuItem>}
+          <DropdownMenuItem onClick={() => router.push(routes.profile)}>
+            <User />
+            <span>Profile</span>
+          </DropdownMenuItem>
+          {pro ? (
+            <DropdownMenuItem>
+              <CreditCard />
+              <span>Billing</span>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => router.push(routes.sub)}>
+              <CircleFadingArrowUp />
+              <span>Upgrade to Pro</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled><Github /><span>GitHub</span></DropdownMenuItem>
-        <DropdownMenuItem><LifeBuoy /><span>Support</span></DropdownMenuItem>
-        <DropdownMenuItem disabled><Cloud /><span>API</span></DropdownMenuItem>
+        <DropdownMenuItem disabled>
+          <Github />
+          <span>GitHub</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <LifeBuoy />
+          <span>Support</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled>
+          <Cloud />
+          <span>API</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => { onLogout(); router.push(routes.auth.loginRoute); }}><LogOut /><span>Log out</span></DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            onLogout();
+            router.push(routes.auth.loginRoute);
+          }}
+        >
+          <LogOut />
+          <span>Log out</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

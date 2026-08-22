@@ -1,11 +1,7 @@
 "use client";
 import {
-  CircleFadingArrowUp,
-  ChevronDown,
   User2,
   LogOut,
-  UserPlus,
-  LogIn,
   Home,
   FileText,
   Compass,
@@ -13,7 +9,6 @@ import {
   BookOpen,
   Settings,
   Crown,
-  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -72,12 +67,9 @@ export function AppSidebar({
       side="right"
       className="z-[110] border-l border-white/10 bg-background/95 backdrop-blur-2xl md:hidden"
     >
-      <SidebarHeader className="border-b border-white/10 p-4">
+      <SidebarHeader className="border-b border-white/10 p-4 pt-18">
         <div className="flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-2" onClick={() => setOpenMobile(false)}>
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 text-white shadow-lg shadow-violet-500/20">
-              <Sparkles className="h-4 w-4" />
-            </span>
             <div>
               <p className="text-sm font-bold tracking-tight">Flint.ai</p>
               <p className="text-[10px] text-muted-foreground">Your career copilot</p>
