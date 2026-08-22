@@ -4,7 +4,7 @@ import { useProtectedRoute } from "@/hooks/protectedRoute";
 import "reactflow/dist/style.css";
 import CareerFlowchart from "@/components/ui/flow-viewer";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/chat-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import MarkdownViewer from "@/components/markDownViewer";
@@ -21,22 +21,7 @@ export default function PathwayPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
-
-  // Update chat if chat id
-  useEffect(() => {
-    if (selectedChatId) {
-      const currentChat = chats.find((chat) => chat._id === selectedChatId);
-      setSelectedChat(currentChat);
-    }
-  }, [selectedChatId]);
-
-  useEffect(() => {
-    if (isAuthResolving) return;
-    refreshChats();
-  }, [user, isAuthResolving]);
-
-  const refreshChats = async () => {
+  const refreshChats = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -51,7 +36,18 @@ export default function PathwayPage() {
         setChats([]);
       })
       .finally(() => setLoading(false));
-  };
+  }, [user]);
+
+  const selectedChat = useMemo(
+    () => (selectedChatId ? chats.find((chat) => chat._id === selectedChatId) : undefined),
+    [chats, selectedChatId]
+  );
+
+  useEffect(() => {
+    if (isAuthResolving) return;
+    refreshChats();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetching external data is a valid effect that updates state
+  }, [user, isAuthResolving, refreshChats]);
 
   if (isAuthResolving) {
     return (

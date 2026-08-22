@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  eslint:{
-     ignoreDuringBuilds: true,
-  },
-  
- typescript: {
+  /* next 16: eslint is no longer run during build — use `npm run lint` separately */
+  typescript: {
     ignoreBuildErrors: true,
   },
 };
