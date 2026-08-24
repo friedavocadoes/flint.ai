@@ -9,22 +9,55 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Signup controller
 export const signup = async (req, res) => {
   try {
-    const { email, passwordHash, name } = req.body;
+    const name = String(req.body?.name ?? "").trim();
+    const email = String(req.body?.email ?? "").trim().toLowerCase();
+    const passwordHash = String(req.body?.passwordHash ?? "");
+
+    if (!name || !email || !passwordHash) {
+      return res.status(400).json({
+        error: "Name, email, and password are required.",
+      });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "Email already in use." });
+      return res.status(409).json({ error: "Email already in use." });
     }
-    const user = new User({ email, passwordHash, name });
+
+    const user = new User({
+      email,
+      passwordHash,
+      name,
+      authProvider: "local",
+    });
     await user.save();
+
     const pathway = new Pathway({ user: user.id, chats: [] });
     await pathway.save();
-    await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
+    user.pathways = pathway.id;
+    await user.save();
+
     res.status(201).json({
       message: "User created successfully.",
-      user: { id: user.id, name: user.name, email: user.email, pro: user.pro },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        pro: false,
+      },
     });
   } catch (err) {
-    res.status(500).json({ error: "Signup failed. " + err.message });
+    console.error("Signup error:", err);
+
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        error: "Email already in use.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Signup failed. " + (err?.message || "Unknown server error"),
+    });
   }
 };
 
