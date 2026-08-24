@@ -3,7 +3,7 @@ export default {
   profile: "/profile",
   resume: "/resumeAI",
   prepare: "/prepareAI",
-  mockInterviews: "#",
+  linkedin: "/linkedin",
   discussions: "#",
   static: {
     contact: "https://github.com/friedavocadoes",

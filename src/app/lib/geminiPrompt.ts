@@ -13,6 +13,16 @@ type resumeAIPromptType = {
   jd?: String | FormDataEntryValue | null;
 };
 
+type linkedinPromptType = {
+  targetRole: string;
+  targetCompanies?: string;
+  currentHeadline?: string;
+  currentAbout?: string;
+  currentExperience?: string;
+  tone?: string;
+  keywords?: string;
+};
+
 export function prepareAIPrompt(promptData: prepareAIPromptDataTypes) {
   return `You are a career coaching assistant that designs GAMIFIED, INTERACTIVE roadmaps. Given the user profile:
 
@@ -91,6 +101,65 @@ Rules:
 - Weak areas ${promptData.weakAreas} must appear as explicit tasks.
 - Be detailed but scannable; avoid generic fluff.
 - Escape JSON strings properly. Do not use markdown code fences. Ensure numeric chances is integer, xp integer, estimatedHours integer.`;
+}
+
+export function linkedinOptimizerPrompt(promptData: linkedinPromptType) {
+  return `You are a LinkedIn profile optimizer and hiring-manager ghostwriter for target role "${promptData.targetRole}" ${promptData.targetCompanies ? `at ${promptData.targetCompanies}` : ""}. Tone: ${promptData.tone || "professional + punchy"}.
+
+Inputs:
+- Current Headline: ${promptData.currentHeadline || "(none provided)"}
+- Current About: ${promptData.currentAbout || "(none provided)"}
+- Current Experience bullets: ${promptData.currentExperience || "(none provided)"}
+- Extra keywords to weave: ${promptData.keywords || "(infer from target role)"}
+
+Goal: Transform these into a recruiter-magnetic profile that ranks in LinkedIn search + ATS and converts profile views to DMs.
+
+Return STRICT JSON only (no markdown fences) with shape:
+
+{
+  "overallScore": 0-100 integer (weighted avg of headline/about/experience),
+  "headlineScore": 0-100,
+  "aboutScore": 0-100,
+  "experienceScore": 0-100,
+  "verdict": "2-3 sentence brutally honest verdict — where they stand and fastest win",
+  "summary": "≤18 word hook (e.g. 'From invisible to inbound-ready in 30 minutes')",
+  "breakdown": [
+    { "label": "Headline & Searchability", "score": 0-25, "max": 25, "feedback": "15w blunt" },
+    { "label": "About & Story", "score": 0-30, "max": 30, "feedback": "..." },
+    { "label": "Experience & Impact", "score": 0-25, "max": 25, "feedback": "..." },
+    { "label": "Keywords & Credibility", "score": 0-20, "max": 20, "feedback": "..." }
+  ],
+  "optimized": {
+    "headline": "180-220 chars. Pattern: Role | Core stack (3-4) | Outcome/Proof | Open to X. No emojis unless tone asks.",
+    "about": "3-4 short paragraphs (850-1100 chars total). Para1 hook + identity, Para2 what you ship + stack + proof, Para3 what you want next + CTA. First person, tight, no filler. Sprinkle target keywords naturally.",
+    "experienceBullets": ["• STAR bullet with metric (e.g. Built X → Y% impact using Z)", "… 4-6 bullets total, each 18-26 words, result-first, verbs: Built/Shipped/Led/Scaled/Cut"],
+    "bannerSuggestion": "One line describing cover image concept (e.g. 'Dark grid with code + metrics + YourName tagline')"
+  },
+  "keywordMatch": {
+    "present": ["React","TypeScript"],
+    "missing": ["GraphQL","Testing"],
+    "suggestions": ["Add GraphQL to headline + one About line: 'Shipping GraphQL APIs at scale'"]
+  },
+  "improvements": [
+    { "section": "Headline|About|Experience", "before": "8-12 word snippet", "after": "rewritten snippet", "why": "12-18w reason (search rank / clarity / impact)" }
+  ],
+  "highlights": [
+    { "section": "Headline | About P1 | Experience bullet 2", "issue": "Vague • no proof — add 2 numbers" }
+  ],
+  "nextSteps": ["Swap headline today — copy/paste", "Replace top 3 experience bullets", "Add 5 keywords to Skills + Featured"],
+  "rawMarkdown": "# LinkedIn Score: XX/100\\n## Optimized Headline\\n... full markdown copy of same content for fallback"
+}
+
+Rules:
+- overallScore = headlineScore weighted + aboutScore + experienceScore blend; be harsh: empty profile 20-30, decent 55-68, strong 78+.
+- breakdown sum = overallScore (25+30+25+20=100).
+- headline MUST contain target role "${promptData.targetRole}" + 3-4 hard skills + value prop. Keep 200 chars ideal, 220 max.
+- about MUST be copy-paste ready, no bracket placeholders like [Your Company]. Use concrete inferred details from inputs or generic but believable.
+- experienceBullets 4-6, if no input experience given invent plausible junior/mid bullets that user can edit — mark as draft but make them strong.
+- keywordMatch 5-8 each, infer stack for "${promptData.targetRole}" at "${promptData.targetCompanies || "top companies"}".
+- improvements 3-4, highlights 2-3.
+- nextSteps 3 immediate 15-min actions.
+- Escape JSON strings, no fences.`;
 }
 
 export function resumeAIPrompt(promptData: resumeAIPromptType) {

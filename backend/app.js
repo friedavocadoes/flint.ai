@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import razorpayWebhook from "./webhooks/razorpayWebhook.js";
 import resumeHistoryRoutes from "./routes/resumeHistoryRoutes.js";
+import linkedinRoutes from "./routes/linkedinRoutes.js";
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ app.use(cors());
 app.use(
   "/api/razorpay",
   express.raw({ type: "application/json" }),
-  razorpayWebhook
+  razorpayWebhook,
 );
 
 app.use(express.json());
@@ -32,6 +33,7 @@ app.use("/api/pathway", pathwayRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/razorpayMain", paymentRoutes);
 app.use("/api/resumeHistory", resumeHistoryRoutes);
+app.use("/api/linkedinHistory", linkedinRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
