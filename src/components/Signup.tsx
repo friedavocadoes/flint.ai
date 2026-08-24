@@ -27,42 +27,50 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { updateUser } = useUserContext(); // Use the updateUser method from context
+  const { updateUser } = useUserContext();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (loading) return;
+
+    const trimmedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!trimmedName || !normalizedEmail || !password) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
     setLoading(true);
-
-    const data = { name: name, email: email, passwordHash: password };
 
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND}/api/auth/signup`,
-        data
+        {
+          name: trimmedName,
+          email: normalizedEmail,
+          passwordHash: password,
+        }
       );
 
-      // Use updateUser to update the user state and localStorage
       updateUser({
         name: res.data.user.name,
         email: res.data.user.email,
-        pro: res.data.user.pro,
+        pro: !!res.data.user.pro,
         id: res.data.user.id,
       });
 
       toast.success("Signup successful! Redirecting...");
-      setTimeout(() => {
-        router.push(routes.auth.hello);
-      }, 100);
+      router.push(routes.auth.hello);
     } catch (error: any) {
-      if (error.response) {
-        // Backend returned an error response
-        toast.error(`${error.response.data.message || "Unknown error"}`);
-      } else if (error.request) {
-        // Request was made but no response received
-        toast.error("Backend unreachable. Please try again later.");
-      } else {
-        // Something else happened
-        toast.error(`${error.message}`);
-      }
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        (error?.request
+          ? "Backend unreachable. Please try again later."
+          : error?.message || "Signup failed. Please try again.");
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -77,7 +85,7 @@ export default function Signup() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="mb-2">
+        <form id="signup-form" className="mb-2" onSubmit={handleSubmit}>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
@@ -85,9 +93,7 @@ export default function Signup() {
                 id="name"
                 name="name"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                }}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
               />
@@ -96,11 +102,10 @@ export default function Signup() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="abc@example.com"
                 required
               />
@@ -109,10 +114,9 @@ export default function Signup() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 placeholder="*******"
                 required
@@ -138,8 +142,9 @@ export default function Signup() {
           </Button>
         ) : (
           <Button
+            type="submit"
+            form="signup-form"
             className="self-start cursor-pointer hover:opacity-80 transition duration-200"
-            onClick={handleSubmit}
           >
             Sign Up
           </Button>
