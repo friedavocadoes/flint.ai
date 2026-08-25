@@ -2,15 +2,37 @@ import mongoose from "mongoose";
 
 const promptDataSchema = new mongoose.Schema(
   {
+    // Step 1 - Geo
+    targetCountry: String,
+    hasTargetCountry: String,
+    // Step 2 - Current reality
+    currentResidenceCountry: String,
+    currentStatus: String,
+    fieldOfStudy: String,
+    educationLevel: String,
+    graduationTimeline: String,
+    currentRole: String,
+    yearsInTargetDomain: String,
+    // Step 3 - Target (expanded)
     role: String,
+    roleSpecificity: String,
+    desiredField: String,
     targetCompanies: String,
+    hasTargetCompany: String,
+    companyTypePreference: String,
+    targetSalary: String,
+    salaryCurrency: String,
+    salaryPeriod: String,
+    opportunityType: String,
+    workModePreference: String,
+    // Core
     expertise: String,
     weakAreas: String,
     timeCommitment: String,
     skillLevel: String,
     extraRemarks: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const taskSchema = new mongoose.Schema(
@@ -23,7 +45,7 @@ const taskSchema = new mongoose.Schema(
       default: "practice",
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const resourceSchema = new mongoose.Schema(
@@ -36,7 +58,7 @@ const resourceSchema = new mongoose.Schema(
       default: "other",
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const stageSchema = new mongoose.Schema(
@@ -48,7 +70,14 @@ const stageSchema = new mongoose.Schema(
     icon: String,
     type: {
       type: String,
-      enum: ["skill", "project", "habit", "networking", "interview", "milestone"],
+      enum: [
+        "skill",
+        "project",
+        "habit",
+        "networking",
+        "interview",
+        "milestone",
+      ],
       default: "skill",
     },
     difficulty: {
@@ -65,7 +94,7 @@ const stageSchema = new mongoose.Schema(
     tasks: [taskSchema],
     resources: [resourceSchema],
   },
-  { _id: false }
+  { _id: false },
 );
 
 const connectionSchema = new mongoose.Schema(
@@ -73,7 +102,7 @@ const connectionSchema = new mongoose.Schema(
     from: String,
     to: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const flowJsonSchema = new mongoose.Schema(
@@ -87,7 +116,7 @@ const flowJsonSchema = new mongoose.Schema(
       edges: mongoose.Schema.Types.Mixed,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const progressSchema = new mongoose.Schema(
@@ -98,7 +127,7 @@ const progressSchema = new mongoose.Schema(
     startedAt: { type: Date, default: Date.now },
     lastActiveAt: { type: Date, default: Date.now },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const metaSchema = new mongoose.Schema(
@@ -109,7 +138,7 @@ const metaSchema = new mongoose.Schema(
     level: String,
     commitmentFit: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const chatSchema = new mongoose.Schema(
@@ -134,7 +163,7 @@ const chatSchema = new mongoose.Schema(
     },
     isLocked: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const pathwaySchema = new mongoose.Schema(
@@ -142,7 +171,7 @@ const pathwaySchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     chats: [chatSchema],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Pathway", pathwaySchema);

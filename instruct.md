@@ -1,0 +1,4 @@
+NOw what i want is, i dont want to use gemini api since this app is gonna be free and random ppl are gonna test it and put in a lot of tokens worth of content. another thing i noticed is, gemini is a bit slow too, i need you to help me rewire the ai thats gonna be used, we need to find a free alternative or cheaper ai for this case, but at the same time it shud be giving out relevant results, i.e, it should have the latest data.
+first lets plan it out, what to use, how to use, load balancing , rate limiting etc. thing of a complete architecture this time beause we are gonna roll this out completely to the public. tell me the options we have right now with their advantages and disadvantages
+
+okay so lets try the openrouter plan, because for prepreai we need gemini or groq since it gives the most relevant results and also since im planning to add more variables into it and then any model that supports pdf and is relevant enough for resume analyzing. 

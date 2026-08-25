@@ -1,16 +1,38 @@
 type prepareAIPromptDataTypes = {
-  role: String;
-  targetCompanies: String;
-  expertise: String;
+  // Geo intent (Step 1)
+  targetCountry?: string;
+  hasTargetCountry?: string;
+  // Current reality (Step 2)
+  currentResidenceCountry?: string;
+  currentStatus?: string; // studying | working | freelance | seeking | break
+  fieldOfStudy?: string;
+  educationLevel?: string;
+  graduationTimeline?: string;
+  currentRole?: string;
+  yearsInTargetDomain?: string;
+  // Target specifics (Step 3)
+  role: string; // always filled — exact role or desired field
+  roleSpecificity?: string; // exact | field | explore
+  desiredField?: string;
+  targetCompanies?: string;
+  hasTargetCompany?: string;
+  companyTypePreference?: string;
+  targetSalary?: string;
+  salaryCurrency?: string;
+  salaryPeriod?: string;
+  opportunityType?: string; // internship | job | either (for students)
+  workModePreference?: string;
+  // Core calibration (kept)
+  expertise: string;
   weakAreas: string;
   skillLevel: string;
   timeCommitment: string;
-  extraRemarks: string;
+  extraRemarks?: string;
 };
 
 type resumeAIPromptType = {
-  role: String | FormDataEntryValue | null;
-  jd?: String | FormDataEntryValue | null;
+  role: string | FormDataEntryValue | null;
+  jd?: string | FormDataEntryValue | null;
 };
 
 type linkedinPromptType = {
@@ -24,17 +46,39 @@ type linkedinPromptType = {
 };
 
 export function prepareAIPrompt(promptData: prepareAIPromptDataTypes) {
-  return `You are a career coaching assistant that designs GAMIFIED, INTERACTIVE roadmaps. Given the user profile:
+  const geo =
+    promptData.hasTargetCountry === "yes" && promptData.targetCountry
+      ? promptData.targetCountry
+      : promptData.targetCountry || "Open / Any";
+  const residence = promptData.currentResidenceCountry || "Not specified";
+  const status = promptData.currentStatus || "Not specified";
+  const salary = promptData.targetSalary
+    ? `${promptData.targetSalary} ${promptData.salaryCurrency || ""} ${promptData.salaryPeriod || ""}`.trim()
+    : "Not specified";
+  return `You are a career coaching assistant that designs GAMIFIED, INTERACTIVE roadmaps. Given the rich user profile, be hyper-personalized and brutally honest.
 
-Role aspiration: ${promptData.role}
-Target company/ies: ${promptData.targetCompanies}
-Expertise: ${promptData.expertise}
-Weak areas: ${promptData.weakAreas}
-Skill level: ${promptData.skillLevel}
-Time commitment: ${promptData.timeCommitment}
-Extra remarks: ${promptData.extraRemarks}
+PROFILE — GEO INTENT (Step 1):
+- Has specific target country? ${promptData.hasTargetCountry || "not specified"} → Target country: ${geo}
+- Current residence: ${residence}
 
-Design an ENGAGING career pathway that feels like a quest, not a textbook. Be motivational but brutally honest about chances.
+PROFILE — CURRENT REALITY (Step 2):
+- Current status: ${status}
+- If studying: field=${promptData.fieldOfStudy || "-"}, level=${promptData.educationLevel || "-"}, graduation in=${promptData.graduationTimeline || "-"}
+- If working: current role=${promptData.currentRole || "-"}, years in TARGET domain=${promptData.yearsInTargetDomain || "-"}
+- Expertise: ${promptData.expertise}
+- Weak areas: ${promptData.weakAreas}
+
+PROFILE — TARGET (Step 3):
+- Target role: ${promptData.role} (specificity: ${promptData.roleSpecificity || "exact"}, desiredField fallback: ${promptData.desiredField || "-"})
+- Has target company? ${promptData.hasTargetCompany || "-"} → Companies: ${promptData.targetCompanies || "-"} | Company type preference if no target: ${promptData.companyTypePreference || "-"}
+- Target salary: ${salary}
+- For student opportunity type: ${promptData.opportunityType || "-"}
+- Work mode pref: ${promptData.workModePreference || "-"}
+- Skill self-rating: ${promptData.skillLevel} on 10
+- Time commitment: ${promptData.timeCommitment}
+- Extra remarks: ${promptData.extraRemarks || "-"}
+
+Design an ENGAGING career pathway that feels like a quest, not a textbook. Be motivational but brutally honest about chances. Tailor visas, salary norms and market realities to targetCountry ${geo} vs residence ${residence}.
 
 Generate JSON with this EXACT shape (no extra keys, no markdown fences):
 
@@ -99,6 +143,11 @@ Rules:
 - Position nodes horizontally: x=index*320, y=100.
 - Respect timeCommitment ${promptData.timeCommitment}: if low, extend timeline, assign habit tasks.
 - Weak areas ${promptData.weakAreas} must appear as explicit tasks.
+- GEO: If targetCountry ${geo} !== "Open / Any" vs residence ${residence}, add 1 stage/task about visa / local market / language / networking for that country. If country is UAE/Singapore/Japan/UK/US, include country-specific hiring realities (e.g., UAE golden visa, Singapore EP, Japan JLPT).
+- REALITY: If currentStatus is studying and graduationTimeline is <6 months, front-load internship/job-ready stages. If working with yearsInTargetDomain "${promptData.yearsInTargetDomain}", avoid junior fluff for 5+ years, focus on gap-closing leadership/scale tasks. If studying fieldOfStudy mismatch target role, add bridge skill stage.
+- TARGET: If roleSpecificity is "field" or "explore", stage 1 must propose 2-3 concrete target roles within ${promptData.desiredField || promptData.role} and let them pick. If hasTargetCompany is "no" and companyTypePreference "${promptData.companyTypePreference}" given, tailor deliverables to that type's bar (Startup→ship fast, FAANG→DSA+System Design). Salary "${salary}" in ${promptData.salaryCurrency} — verdict must comment if unrealistic for ${geo} + level and suggest market band.
+- Opportunity: If opportunityType is internship, deliverables should be internship-friendly (1-2 week projects, not 6-month replicas).
+- Timeline must be REALISTIC given timeCommitment + skillLevel + yearsInTargetDomain + targetCountry difficulty. Low commitment or cross-border move => extend 30-50%. Include timeline reasoning in overview.
 - Be detailed but scannable; avoid generic fluff.
 - Escape JSON strings properly. Do not use markdown code fences. Ensure numeric chances is integer, xp integer, estimatedHours integer.`;
 }

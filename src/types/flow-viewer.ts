@@ -42,16 +42,50 @@ export interface Chat {
   summary?: string;
   textual?: string;
   overview?: string;
-  meta?: { chances?: number; verdict?: string; timeline?: string; level?: string; commitmentFit?: string };
+  meta?: {
+    chances?: number;
+    verdict?: string;
+    timeline?: string;
+    level?: string;
+    commitmentFit?: string;
+  };
   motivation?: { streakTip?: string; nextWin?: string };
-  progress?: { completedStageIds?: string[]; completedTaskIds?: string[]; xpEarned?: number; startedAt?: string; lastActiveAt?: string };
+  progress?: {
+    completedStageIds?: string[];
+    completedTaskIds?: string[];
+    xpEarned?: number;
+    startedAt?: string;
+    lastActiveAt?: string;
+  };
   flowjson?: {
     pathwayData?: PathwayData;
     structData?: { nodes: any[]; edges: any[] };
   };
   promptData: {
+    // Step 1
+    targetCountry?: string;
+    hasTargetCountry?: string;
+    // Step 2
+    currentResidenceCountry?: string;
+    currentStatus?: string;
+    fieldOfStudy?: string;
+    educationLevel?: string;
+    graduationTimeline?: string;
+    currentRole?: string;
+    yearsInTargetDomain?: string;
+    // Step 3
     role: string;
-    targetCompanies: string;
+    roleSpecificity?: string;
+    desiredField?: string;
+    targetCompanies?: string;
+    hasTargetCompany?: string;
+    companyTypePreference?: string;
+    targetSalary?: string;
+    salaryCurrency?: string;
+    salaryPeriod?: string;
+    opportunityType?: string;
+    workModePreference?: string;
+    // Core
     expertise?: string;
     weakAreas?: string;
     timeCommitment?: string;

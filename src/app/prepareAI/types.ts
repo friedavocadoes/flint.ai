@@ -6,7 +6,8 @@ export interface Task {
 export interface Resource {
   label: string;
   url: string;
-  type?: "leetcode" | "course" | "article" | "video" | "book" | "tool" | "other";
+  type?:
+    "leetcode" | "course" | "article" | "video" | "book" | "tool" | "other";
 }
 export interface Stage {
   id: string;
@@ -14,7 +15,8 @@ export interface Stage {
   subtitle?: string;
   description?: string;
   icon?: string;
-  type?: "skill" | "project" | "habit" | "networking" | "interview" | "milestone";
+  type?:
+    "skill" | "project" | "habit" | "networking" | "interview" | "milestone";
   difficulty?: "Beginner" | "Intermediate" | "Advanced";
   estimatedDuration?: string;
   estimatedHours?: number;
@@ -58,7 +60,7 @@ export interface ChatMotivation {
 }
 
 export interface Chat {
-  _id: string; // for backend chats, or use id: number for local/test data
+  _id: string;
   title?: string;
   summary?: string;
   textual?: string;
@@ -74,8 +76,30 @@ export interface Chat {
     };
   };
   promptData: {
+    // Step 1
+    targetCountry?: string;
+    hasTargetCountry?: string;
+    // Step 2
+    currentResidenceCountry?: string;
+    currentStatus?: string;
+    fieldOfStudy?: string;
+    educationLevel?: string;
+    graduationTimeline?: string;
+    currentRole?: string;
+    yearsInTargetDomain?: string;
+    // Step 3
     role: string;
-    targetCompanies: string;
+    roleSpecificity?: string;
+    desiredField?: string;
+    targetCompanies?: string;
+    hasTargetCompany?: string;
+    companyTypePreference?: string;
+    targetSalary?: string;
+    salaryCurrency?: string;
+    salaryPeriod?: string;
+    opportunityType?: string;
+    workModePreference?: string;
+    // Core
     expertise: string;
     weakAreas: string;
     timeCommitment: string;
