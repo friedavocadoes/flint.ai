@@ -14,7 +14,7 @@ const billingSubscriptionSchema = new mongoose.Schema(
       resumeAI: { type: Number, default: 0 },
       linkedin: { type: Number, default: 0 },
     },
-    provider: { type: String, enum: ["cashfree", "razorpay", "manual"], default: "manual" },
+    provider: { type: String, enum: ["cashfree", "manual"], default: "manual" },
     providerSubscriptionId: String,
   },
   { timestamps: true }
