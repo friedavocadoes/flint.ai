@@ -107,16 +107,11 @@ router.get("/verify/:orderId", async (req, res) => {
   }
 });
 
-// Re-check recent incomplete orders. This is intentionally small and is a
-// recovery path for modal checkouts/webhooks that were interrupted; paid-order
-// fulfillment is idempotent so webhook + client verification cannot double-credit.
 router.post("/reconcile", async (req, res) => {
   try {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: "userId is required" });
-    const payments = await BillingPayment.find({ user: userId, status: { $in: ["created", "pending"] } })
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const payments = await BillingPayment.find({ user: userId, status: { $in: ["created", "pending"] } }).sort({ createdAt: -1 }).limit(5);
     const results = [];
     for (const payment of payments) {
       try {
@@ -134,14 +129,31 @@ router.post("/reconcile", async (req, res) => {
 
 router.post("/cancel-premium", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, confirmation } = req.body;
+    if (!userId || confirmation?.trim() !== "CANCEL FLINT PREMIUM") {
+      return res.status(400).json({ error: "Confirmation text is required" });
+    }
+
     const subscription = await BillingSubscription.findOne({ user: userId });
-    if (!subscription || !subscription.isPremiumActive()) return res.status(400).json({ error: "No active Premium plan" });
-    subscription.cancelAtPeriodEnd = true;
-    subscription.cancelledAt = new Date();
+    if (!subscription || !subscription.isPremiumActive()) {
+      return res.status(400).json({ error: "No active Premium plan" });
+    }
+
+    // This product is currently a prepaid 365-day purchase rather than a
+    // recurring mandate. Cancellation therefore ends the entitlement now.
+    // No refund is issued for the unused portion of the purchase.
+    const now = new Date();
+    subscription.type = "free";
+    subscription.status = "cancelled";
+    subscription.endDate = now;
+    subscription.cancelAtPeriodEnd = false;
+    subscription.cancelledAt = now;
+    subscription.provider = subscription.provider || "cashfree";
     await subscription.save();
-    res.json({ subscription });
+
+    res.json({ success: true, subscription });
   } catch (err) {
+    console.error("Premium cancellation error:", err);
     res.status(500).json({ error: "Unable to cancel Premium" });
   }
 });
