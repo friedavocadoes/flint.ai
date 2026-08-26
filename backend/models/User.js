@@ -10,18 +10,12 @@ const userSchema = new mongoose.Schema(
     authProvider: { type: String, enum: ["local", "google"], default: "local" },
     age: Number,
     role: String,
-    sex: {
-      type: String,
-      enum: ["Male", "Female", "Other"],
-    },
+    sex: { type: String, enum: ["Male", "Female", "Other"] },
     nationality: String,
     pathways: { type: mongoose.Schema.Types.ObjectId, ref: "Pathway" },
-    resume: { type: String }, // we’ll flesh this out later
-    subscriptionRef: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Subscription",
-    },
-    payments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
+    resume: { type: String },
+    subscriptionRef: { type: mongoose.Schema.Types.ObjectId, ref: "BillingSubscription" },
+    payments: [{ type: mongoose.Schema.Types.ObjectId, ref: "BillingPayment" }],
   },
   { timestamps: true }
 );
