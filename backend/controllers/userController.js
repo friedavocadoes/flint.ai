@@ -52,7 +52,10 @@ export const getMeInfo = async (req, res) => {
       const subscription = await BillingSubscription.create({ user: user.id, type: "free", status: "inactive" });
       user = await User.findByIdAndUpdate(user.id, { subscriptionRef: subscription._id }, { new: true }).populate("subscriptionRef").populate("payments");
     }
-    res.status(200).json({ ...user.toObject(), pro: isPremium(user.subscriptionRef) });
+
+    // toObject() does not include Mongoose's virtual `id` field by default.
+    // Return it explicitly because the frontend uses this id for billing calls.
+    res.status(200).json({ ...user.toObject(), id: user.id, pro: isPremium(user.subscriptionRef) });
   } catch (err) { res.status(500).json({ error: "Failed to get user info. " + err.message }); }
 };
 
