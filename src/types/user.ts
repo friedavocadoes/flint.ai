@@ -3,7 +3,7 @@ import type { Chat } from "./flow-viewer";
 export interface Payment {
   _id: string;
   user: string;
-  provider: "cashfree" | "razorpay";
+  provider: "cashfree";
   providerOrderId: string;
   providerPaymentId?: string;
   status: "created" | "paid" | "failed" | "pending";
@@ -30,7 +30,7 @@ export interface Subscription {
     resumeAI: number;
     linkedin: number;
   };
-  provider?: string;
+  provider?: "cashfree" | "manual";
   createdAt: string;
   updatedAt: string;
 }
