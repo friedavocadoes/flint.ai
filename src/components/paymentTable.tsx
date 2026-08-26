@@ -1,86 +1,19 @@
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Payment } from "@/types/user";
 import { Skeleton } from "./ui/skeleton";
+
+const labels = { prepareAI: "PrepareAI generation", resumeAI: "ResumeAI analysis", linkedin: "LinkedIn analysis", premium: "Flint Premium · 1 year" };
 
 export default function PaymentTable({ payments }: { payments: Payment[] }) {
   return (
     <Table>
-      <TableCaption>Powered by Razorpay</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-2">Status</TableHead>
-          <TableHead>Product</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {payments.map((payment) => (
-          <TableRow
-            className={
-              payment.status === "paid"
-                ? "bg-green-900/20 hover:bg-green-900/30"
-                : "bg-red-900/20 hover:bg-red-900/30"
-            }
-            key={payment._id}
-          >
-            <TableCell>{payment.status === "paid" ? "🟢" : "🔴"}</TableCell>
-            <TableCell>
-              {payment.source === "ppc" ? "Pay per chat" : "Subscription"}
-            </TableCell>
-
-            <TableCell className="text-right">
-              {payment.payload.payment.entity.currency +
-                " " +
-                payment.amount / 100 +
-                " (" +
-                payment.payload.payment.entity.method +
-                ")"}
-            </TableCell>
-          </TableRow>
-
-          //   <div key={payment._id}>hi</div>
-        ))}
-      </TableBody>
+      <TableCaption>Payments processed securely by Cashfree</TableCaption>
+      <TableHeader><TableRow><TableHead>Status</TableHead><TableHead>Product</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+      <TableBody>{payments.map((payment) => <TableRow key={payment._id} className={payment.status === "paid" ? "bg-green-900/10" : payment.status === "failed" ? "bg-red-900/10" : "bg-muted/20"}><TableCell>{payment.status === "paid" ? "🟢 Paid" : payment.status === "failed" ? "🔴 Failed" : "🟠 Pending"}</TableCell><TableCell className="font-medium">{labels[payment.product] || payment.product}</TableCell><TableCell className="text-muted-foreground">{payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString("en-IN") : "—"}</TableCell><TableCell className="text-right font-semibold">{payment.currency} {payment.amount.toFixed(2)}</TableCell></TableRow>)}</TableBody>
     </Table>
   );
 }
 
 export function PaymentTableLoader() {
-  return (
-    <Table>
-      <TableCaption>Powered by Razorpay</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-2">Status</TableHead>
-          <TableHead>Product</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {[1, 2].map((payment) => (
-          <TableRow className="" key={payment}>
-            <TableCell>🟠</TableCell>
-            <TableCell>
-              <Skeleton className="w-30 h-5" />
-            </TableCell>
-
-            <TableCell className="flex justify-end ">
-              <Skeleton className="w-20 h-5" />
-            </TableCell>
-          </TableRow>
-
-          //   <div key={payment._id}>hi</div>
-        ))}
-      </TableBody>
-    </Table>
-  );
+  return <Table><TableCaption>Loading payment history</TableCaption><TableHeader><TableRow><TableHead>Status</TableHead><TableHead>Product</TableHead><TableHead>Date</TableHead><TableHead>Amount</TableHead></TableRow></TableHeader><TableBody>{[1, 2].map((payment) => <TableRow key={payment}><TableCell><Skeleton className="h-5 w-16" /></TableCell><TableCell><Skeleton className="h-5 w-32" /></TableCell><TableCell><Skeleton className="h-5 w-20" /></TableCell><TableCell><Skeleton className="ml-auto h-5 w-16" /></TableCell></TableRow>)}</TableBody></Table>;
 }
