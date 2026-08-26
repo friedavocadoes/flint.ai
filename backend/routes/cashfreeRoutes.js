@@ -33,6 +33,7 @@ router.post("/create-order", async (req, res) => {
       amount: plan.amount,
       currency: plan.currency,
       product,
+      quantity: 1,
       status: "created",
     });
 
@@ -88,7 +89,7 @@ async function fulfillPaidOrder(orderIdValue, payload = {}) {
     subscription.cancelledAt = undefined;
     subscription.provider = "cashfree";
   } else {
-    subscription.chatCredits[payment.product] = (subscription.chatCredits[payment.product] || 0) + 1;
+    subscription.chatCredits[payment.product] = (subscription.chatCredits[payment.product] || 0) + (payment.quantity || 1);
   }
   await subscription.save();
   await User.findByIdAndUpdate(payment.user, { subscriptionRef: subscription._id });
@@ -103,6 +104,31 @@ router.get("/verify/:orderId", async (req, res) => {
   } catch (err) {
     console.error("Cashfree verification error:", err);
     res.status(500).json({ error: "Unable to verify payment" });
+  }
+});
+
+// Re-check recent incomplete orders. This is intentionally small and is a
+// recovery path for modal checkouts/webhooks that were interrupted; paid-order
+// fulfillment is idempotent so webhook + client verification cannot double-credit.
+router.post("/reconcile", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId is required" });
+    const payments = await BillingPayment.find({ user: userId, status: { $in: ["created", "pending"] } })
+      .sort({ createdAt: -1 })
+      .limit(5);
+    const results = [];
+    for (const payment of payments) {
+      try {
+        const fulfilled = await fulfillPaidOrder(payment.providerOrderId);
+        if (fulfilled) results.push({ product: fulfilled.product, status: fulfilled.status });
+      } catch (error) {
+        console.error(`Cashfree reconcile failed for ${payment.providerOrderId}:`, error.message);
+      }
+    }
+    res.json({ results });
+  } catch (err) {
+    res.status(500).json({ error: "Unable to reconcile payments" });
   }
 });
 
@@ -123,13 +149,14 @@ router.post("/cancel-premium", async (req, res) => {
 export async function handleCashfreeWebhook(rawBody, signature, timestamp, payload) {
   const { verifyWebhookSignature } = await import("../services/cashfree.js");
   if (!verifyWebhookSignature(rawBody, timestamp, signature)) throw new Error("Invalid Cashfree webhook signature");
-  const orderIdValue = payload?.data?.order?.order_id || payload?.data?.order?.order_id;
+  const orderIdValue = payload?.data?.order?.order_id;
   if (orderIdValue) await fulfillPaidOrder(orderIdValue, payload);
 }
 
 router.post("/webhook", async (req, res) => {
   try {
-    await handleCashfreeWebhook(req.body.toString("utf8"), req.headers["x-webhook-signature"], req.headers["x-webhook-timestamp"], JSON.parse(req.body.toString("utf8")));
+    const rawBody = req.body.toString("utf8");
+    await handleCashfreeWebhook(rawBody, req.headers["x-webhook-signature"], req.headers["x-webhook-timestamp"], JSON.parse(rawBody));
     res.sendStatus(200);
   } catch (err) {
     console.error("Cashfree webhook error:", err.message);
