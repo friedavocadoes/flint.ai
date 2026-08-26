@@ -62,6 +62,9 @@ export default function SubscribePage() {
       setCancelOpen(false);
       setConfirmation("");
       toast.success("Premium cancelled. No refund was issued.");
+      // The profile page opens this modal via ?cancel=1. Clear that query
+      // parameter before reloading, otherwise the modal immediately reopens.
+      window.history.replaceState(null, "", window.location.pathname);
       window.location.reload();
     } catch (error: any) {
       toast.error(error.message || "Unable to cancel Premium");
