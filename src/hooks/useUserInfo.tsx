@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { User } from "@/types/user";
 import { toast } from "sonner";
@@ -10,44 +10,39 @@ export function useUserInfo(userId?: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchUser = useCallback(async () => {
     if (!user?.id) return;
-    setLoading(true);
-    setError(null);
-    axios
-      .get(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/me/${user.id}`)
-      .then((res) => {
-        setUser(res.data);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [user]);
-
-  function setMeInfo({
-    role,
-    age,
-    sex,
-    nationality,
-  }: {
-    role: string;
-    age: number;
-    sex: "Male" | "Female" | "Other" | null;
-    nationality: string;
-  }) {
-    axios
-      .post(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/me`, {
-        role,
-        age,
-        sex,
-        nationality,
-        id: user?.id,
-      })
-      .then(() => {
-        toast.success("Set user details.");
-      })
-      .catch((err) => {
-        toast.error("Failed. ", err.message);
+    try {
+      setError(null);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/me/${user.id}`, {
+        headers: { "Cache-Control": "no-cache" },
       });
+      setUser(res.data);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetchUser().finally(() => setLoading(false));
+  }, [user?.id, fetchUser]);
+
+  useEffect(() => {
+    const refreshBilling = () => void fetchUser();
+    window.addEventListener("flint:billing-updated", refreshBilling);
+    return () => window.removeEventListener("flint:billing-updated", refreshBilling);
+  }, [fetchUser]);
+
+  function setMeInfo({ role, age, sex, nationality }: { role: string; age: number; sex: "Male" | "Female" | "Other" | null; nationality: string }) {
+    axios
+      .post(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/me`, { role, age, sex, nationality, id: user?.id })
+      .then(() => toast.success("Set user details."))
+      .catch((err) => toast.error(`Failed. ${err.message}`));
   }
 
   return { userInfo, loading, error, setMeInfo };
