@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const billingPaymentSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    provider: { type: String, enum: ["cashfree", "razorpay"], required: true },
+    provider: { type: String, enum: ["cashfree"], default: "cashfree", required: true },
     providerOrderId: { type: String, required: true, unique: true },
     providerPaymentId: String,
     status: { type: String, enum: ["created", "paid", "failed", "pending"], default: "created" },
