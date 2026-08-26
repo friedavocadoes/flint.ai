@@ -2,9 +2,9 @@
 
 ### ngrok
 
-1. run the thing u downloaded
-2. first time setup ig: `ngrok config add-authtoken 2zgjy6oW6l6v9Vit1Tilr2hU9ux_4vvRkbAwZFM5ELt6TanUz`
+1. run the thing you downloaded
+2. first-time setup: configure your ngrok authtoken locally
 3. run `ngrok http http://localhost:5000`
-4. paste the link in [razorpay dashboard](https://dashboard.razorpay.com/app/webhooks)
+4. use the generated HTTPS URL wherever a local webhook endpoint needs to be exposed
 
 - google oauth migration in the future: https://www.youtube.com/watch?v=tgO_ADSvY1I
