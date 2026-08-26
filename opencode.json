@@ -27,7 +27,7 @@
   "agent": {
     "build": {
       "description": "Default build agent for Flint.ai — Next.js frontend + Express backend",
-      "prompt": "You are working on Flint.ai (Next 16 + Express 5 + Mongoose 8 + Gemini 2.5-flash + @react-oauth/google + Razorpay). Frontend 3-step prepareAI wizard (geo→reality→target + locationMeta), resume + linkedin optimizers with history. Follow AGENTS.md + instruct.md. Check .env (NEXT_PUBLIC_BACKEND, GEMINI_API_KEY, NEXT_PUBLIC_GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID, MONGO_URI, RAZORPAY_*). Respect localStorage auth (loading flag) + Pathway rich stages + progress. Verify with npm run lint and npm run build.",
+      "prompt": "You are working on Flint.ai (Next 16 + Express 5 + Mongoose 8 + Gemini 2.5-flash + @react-oauth/google + Cashfree). Frontend 3-step prepareAI wizard (geo→reality→target + locationMeta), resume + linkedin optimizers with history, profile, and Cashfree billing. Follow AGENTS.md + instruct.md. Check .env (NEXT_PUBLIC_BACKEND, GEMINI_API_KEY, NEXT_PUBLIC_GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID, MONGO_URI, CASHFREE_*). Respect localStorage auth (loading flag) + Pathway rich stages + progress. Verify with npm run lint and npm run build.",
       "tools": {
         "write": true,
         "edit": true,
@@ -36,7 +36,7 @@
     },
     "plan": {
       "description": "Planning agent — read-only exploration before edits",
-      "prompt": "You are in PLAN mode for Flint.ai. Do not edit files. Analyze src/app/*, backend/*, src/app/lib/geminiPrompt.ts, and AGENTS.md, then propose a step-by-step plan with file paths and risks. Focus on auth tech debt (plaintext passwords), subscriptionRoutes broken, and dual-deploy env handling.",
+      "prompt": "You are in PLAN mode for Flint.ai. Do not edit files. Analyze src/app/*, backend/*, src/app/lib/geminiPrompt.ts, and AGENTS.md, then propose a step-by-step plan with file paths and risks. Focus on auth tech debt (plaintext passwords), Cashfree billing correctness, cancellation semantics, and dual-deploy env handling.",
       "tools": {
         "write": false,
         "edit": false,
@@ -45,7 +45,7 @@
     },
     "frontend": {
       "description": "Frontend specialist — Next App Router, shadcn, Tailwind, ReactFlow",
-      "prompt": "You are the Flint.ai frontend specialist. Work in src/. Use shadcn aliases @/*, Tailwind 4 stone, next-themes. Keep Navbar (Tools: Resume/Prepare/LinkedIn) + routes.js in sync. For AI flows edit src/app/lib/geminiPrompt.ts (prepareAIPrompt hyper-personalized with locationMeta, resumeAIPrompt, linkedinPrompt) + src/app/api/*/route.* together with jsonrepair fallback. Use sonner, not alert.",
+      "prompt": "You are the Flint.ai frontend specialist. Work in src/. Use shadcn aliases @/*, Tailwind 4 stone, next-themes. Keep Navbar (Tools: Resume/Prepare/LinkedIn) + routes.js in sync. For AI flows edit src/app/lib/geminiPrompt.ts (prepareAIPrompt hyper-personalized with locationMeta, resumeAIPrompt, linkedinPrompt) + src/app/api/*/route.* together with jsonrepair fallback. Use sonner, not alert. Billing uses only cashfreePayButton.tsx and /api/cashfree.",
       "tools": {
         "write": true,
         "edit": true,
@@ -53,8 +53,8 @@
       }
     },
     "backend": {
-      "description": "Backend specialist — Express + Mongoose + Razorpay webhook",
-      "prompt": "You are the Flint.ai backend specialist. Work in backend/. ESM only. Mount routes in app.js (pathway, auth, resumeHistory, linkedinHistory, razorpayMain, razorpay webhook). Models: User (googleId/avatar), Pathway (22-field promptData + rich stage + progress + meta), ResumeReview, LinkedinReview, Payment→Subscription post-save. Never commit .env. Keep GOOGLE_CLIENT_ID verify flow.",
+      "description": "Backend specialist — Express + Mongoose + Cashfree",
+      "prompt": "You are the Flint.ai backend specialist. Work in backend/. ESM only. Mount routes in app.js (pathway, auth, resumeHistory, linkedinHistory, cashfree). Models: User (googleId/avatar), Pathway (22-field promptData + rich stage + progress + meta), ResumeReview, LinkedinReview, BillingPayment, BillingSubscription. Cashfree is the only payment provider. Never commit .env. Keep GOOGLE_CLIENT_ID verify flow.",
       "tools": {
         "write": true,
         "edit": true,
@@ -79,11 +79,12 @@
       "agent": "build"
     },
     "test-payments": {
-      "template": "Test Razorpay flow: start backend (cd backend && npm run dev), verify POST /api/razorpayMain/create-order, check webhooks/razorpayWebhook.js HMAC, and Payment->Subscription post-save. Use payTest harness.",
-      "description": "Razorpay payment lifecycle test"
+      "template": "Test Cashfree flow: start backend (cd backend && npm run dev), verify POST /api/cashfree/create-order, GET /api/cashfree/verify/:orderId, reconciliation, webhook signature verification, and BillingPayment→BillingSubscription fulfillment. Test Premium cancellation with the confirmation flow.",
+      "description": "Cashfree payment lifecycle test",
+      "agent": "build"
     },
     "verify-build": {
-      "template": "Run verification: npm run lint, npm run build (next.config ignores TS), and cd backend && node --check app.js. Check prepareAI, resumeAI, linkedin, GoogleLoginButton, and locationMeta imports.",
+      "template": "Run verification: npm run lint, npm run build (next.config ignores TS), and cd backend && node --check app.js. Check prepareAI, resumeAI, linkedin, GoogleLoginButton, CashfreePayButton, and locationMeta imports.",
       "description": "Lint + build verification"
     }
   }

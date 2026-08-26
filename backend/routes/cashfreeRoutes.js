@@ -1,5 +1,6 @@
 import express from "express";
 import crypto from "crypto";
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import BillingPayment from "../models/BillingPayment.js";
 import BillingSubscription from "../models/BillingSubscription.js";
@@ -8,54 +9,156 @@ import { createOrder, getOrder } from "../services/cashfree.js";
 
 const router = express.Router();
 const allowedProducts = ["prepareAI", "resumeAI", "linkedin", "premium"];
-const CANCELLATION_CONFIRMATION = "CANCEL FLINT PREMIUM";
+const CANCEL_CONFIRMATION = "CANCEL FLINT PREMIUM";
 
 function orderId(userId, product) {
   return `flint_${product}_${String(userId).slice(-8)}_${Date.now()}_${crypto.randomBytes(3).toString("hex")}`;
 }
 
+function isMissingCashfreeOrder(error) {
+  return (
+    error?.status === 404 ||
+    /order reference id does not exist|order.*does not exist/i.test(
+      error?.message || "",
+    )
+  );
+}
+
+async function markPaymentFailed(payment, payload = {}) {
+  payment.status = "failed";
+  payment.payload = payload;
+  await payment.save();
+  return payment;
+}
+
 router.post("/create-order", async (req, res) => {
+  let payment = null;
   try {
     const { userId, product } = req.body;
-    if (!userId || !allowedProducts.includes(product)) return res.status(400).json({ error: "Invalid billing request" });
+    if (
+      !userId ||
+      !allowedProducts.includes(product) ||
+      !mongoose.isValidObjectId(userId)
+    ) {
+      return res.status(400).json({ error: "Invalid billing request" });
+    }
+
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
+
     const plan = getPrice(product);
     const id = orderId(user.id, product);
     const frontend = process.env.FRONTEND_URL || "http://localhost:3000";
-    const backend = process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`;
-    const payment = await BillingPayment.create({ user: user.id, provider: "cashfree", providerOrderId: id, amount: plan.amount, currency: plan.currency, product, quantity: 1, status: "created" });
-    const cfOrder = await createOrder({ orderId: id, amount: plan.amount, customer: { id: user.id, name: user.name, email: user.email }, returnUrl: `${frontend}/subscribe?payment=return&order_id={order_id}`, notifyUrl: `${backend}/api/cashfree/webhook`, note: `Flint.ai ${product}`, metadata: { product, billing_payment_id: String(payment._id) } });
-    res.json({ orderId: cfOrder.order_id || id, paymentSessionId: cfOrder.payment_session_id });
+    const backend =
+      process.env.BACKEND_PUBLIC_URL ||
+      `http://localhost:${process.env.PORT || 5000}`;
+
+    // Keep an internal payment record before talking to Cashfree so a webhook
+    // can never arrive before Flint knows which purchase it belongs to.
+    payment = await BillingPayment.create({
+      user: user.id,
+      provider: "cashfree",
+      providerOrderId: id,
+      amount: plan.amount,
+      currency: plan.currency,
+      product,
+      quantity: 1,
+      status: "created",
+    });
+
+    const cfOrder = await createOrder({
+      orderId: id,
+      amount: plan.amount,
+      customer: { id: user.id, name: user.name, email: user.email },
+      returnUrl: `${frontend}/subscribe?payment=return&order_id={order_id}`,
+      notifyUrl: `${backend}/api/cashfree/webhook`,
+      note: `Flint.ai ${product}`,
+      metadata: { product, billing_payment_id: String(payment._id) },
+    });
+
+    if (!cfOrder?.payment_session_id) {
+      await markPaymentFailed(payment, {
+        error: "Cashfree did not return a payment session",
+      });
+      return res
+        .status(502)
+        .json({ error: "Cashfree did not return a payment session" });
+    }
+
+    res.json({
+      orderId: cfOrder.order_id || id,
+      paymentSessionId: cfOrder.payment_session_id,
+    });
   } catch (err) {
+    if (payment && payment.status === "created") {
+      await markPaymentFailed(payment, {
+        error: err?.message || "Cashfree order creation failed",
+      });
+    }
     console.error("Cashfree create order error:", err);
-    res.status(err.status || 500).json({ error: err.message || "Failed to create payment" });
+    res
+      .status(err.status || 500)
+      .json({ error: err.message || "Failed to create payment" });
   }
 });
 
 async function fulfillPaidOrder(orderIdValue, payload = {}) {
-  const payment = await BillingPayment.findOne({ providerOrderId: orderIdValue });
+  const payment = await BillingPayment.findOne({
+    providerOrderId: orderIdValue,
+  });
   if (!payment) return null;
   if (payment.status === "paid") return payment;
-  const order = await getOrder(orderIdValue);
+
+  let order;
+  try {
+    order = await getOrder(orderIdValue);
+  } catch (error) {
+    // Old/test orders or orders created under a different Cashfree environment
+    // can disappear from the current merchant account. Do not keep retrying
+    // those forever or flood the backend logs on every user profile load.
+    if (isMissingCashfreeOrder(error)) {
+      return markPaymentFailed(payment, {
+        ...payload,
+        error: "Cashfree order no longer exists in the configured environment",
+      });
+    }
+    throw error;
+  }
+
   if (order.order_status !== "PAID") {
     payment.status = order.order_status === "ACTIVE" ? "pending" : "failed";
     payment.payload = { ...payload, order };
     await payment.save();
     return payment;
   }
+
   payment.status = "paid";
   payment.paymentDate = new Date();
   payment.providerPaymentId = order.cf_order_id || order.order_id;
   payment.payload = { ...payload, order };
   await payment.save();
-  await User.findByIdAndUpdate(payment.user, { $addToSet: { payments: payment._id } });
+  await User.findByIdAndUpdate(payment.user, {
+    $addToSet: { payments: payment._id },
+  });
+
   let subscription = await BillingSubscription.findOne({ user: payment.user });
-  if (!subscription) subscription = await BillingSubscription.create({ user: payment.user, type: "free", status: "inactive" });
+  if (!subscription) {
+    subscription = await BillingSubscription.create({
+      user: payment.user,
+      type: "free",
+      status: "inactive",
+    });
+  }
+
   if (payment.product === "premium") {
     const now = new Date();
-    const base = subscription.endDate && subscription.endDate > now ? subscription.endDate : now;
-    const endDate = new Date(base.getTime() + BILLING_PLANS.premium.durationDays * 24 * 60 * 60 * 1000);
+    const base =
+      subscription.endDate && subscription.endDate > now
+        ? subscription.endDate
+        : now;
+    const endDate = new Date(
+      base.getTime() + BILLING_PLANS.premium.durationDays * 24 * 60 * 60 * 1000,
+    );
     subscription.type = "premium";
     subscription.status = "active";
     subscription.startDate = subscription.startDate || now;
@@ -64,10 +167,15 @@ async function fulfillPaidOrder(orderIdValue, payload = {}) {
     subscription.cancelledAt = undefined;
     subscription.provider = "cashfree";
   } else {
-    subscription.chatCredits[payment.product] = (subscription.chatCredits[payment.product] || 0) + (payment.quantity || 1);
+    subscription.chatCredits[payment.product] =
+      (subscription.chatCredits[payment.product] || 0) +
+      (payment.quantity || 1);
   }
+
   await subscription.save();
-  await User.findByIdAndUpdate(payment.user, { subscriptionRef: subscription._id });
+  await User.findByIdAndUpdate(payment.user, {
+    subscriptionRef: subscription._id,
+  });
   return payment;
 }
 
@@ -85,17 +193,35 @@ router.get("/verify/:orderId", async (req, res) => {
 router.post("/reconcile", async (req, res) => {
   try {
     const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: "userId is required" });
-    const payments = await BillingPayment.find({ user: userId, status: { $in: ["created", "pending"] } }).sort({ createdAt: -1 }).limit(5);
+    if (!userId || !mongoose.isValidObjectId(userId))
+      return res.status(400).json({ error: "userId is required" });
+
+    const payments = await BillingPayment.find({
+      user: userId,
+      status: { $in: ["created", "pending"] },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
     const results = [];
     for (const payment of payments) {
       try {
         const fulfilled = await fulfillPaidOrder(payment.providerOrderId);
-        if (fulfilled) results.push({ product: fulfilled.product, status: fulfilled.status });
+        if (fulfilled)
+          results.push({
+            product: fulfilled.product,
+            status: fulfilled.status,
+          });
       } catch (error) {
-        console.error(`Cashfree reconcile failed for ${payment.providerOrderId}:`, error.message);
+        // A real Cashfree/API failure is worth logging; missing orders are
+        // already converted to failed above and are intentionally silent.
+        console.error(
+          `Cashfree reconcile failed for ${payment.providerOrderId}:`,
+          error.message,
+        );
       }
     }
+
     res.json({ results });
   } catch (err) {
     res.status(500).json({ error: "Unable to reconcile payments" });
@@ -105,23 +231,55 @@ router.post("/reconcile", async (req, res) => {
 router.post("/cancel-premium", async (req, res) => {
   try {
     const { userId, confirmation } = req.body;
-    if (!userId || confirmation?.trim() !== CANCELLATION_CONFIRMATION) return res.status(400).json({ error: `Type ${CANCELLATION_CONFIRMATION} exactly to confirm cancellation.` });
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ error: "Invalid account" });
+    }
+
+    if (
+      String(confirmation || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toUpperCase() !== CANCEL_CONFIRMATION
+    ) {
+      return res
+        .status(400)
+        .json({ error: `Type ${CANCEL_CONFIRMATION} exactly to confirm.` });
+    }
+
     const subscription = await BillingSubscription.findOne({ user: userId });
-    if (!subscription || !subscription.isPremiumActive()) return res.status(400).json({ error: "No active Premium plan" });
-    subscription.cancelAtPeriodEnd = false;
-    subscription.cancelledAt = new Date();
+    if (!subscription || !subscription.isPremiumActive()) {
+      return res.status(400).json({ error: "No active Premium plan" });
+    }
+
+    // Premium is a prepaid 365-day purchase, not a recurring mandate.
+    // Cancellation therefore revokes the entitlement immediately and does not
+    // issue a refund for the unused portion of the purchase.
+    const now = new Date();
+    subscription.type = "free";
     subscription.status = "cancelled";
-    subscription.endDate = new Date();
+    subscription.endDate = now;
+    subscription.cancelAtPeriodEnd = false;
+    subscription.cancelledAt = now;
+    subscription.provider = "cashfree";
+    subscription.providerSubscriptionId = undefined;
     await subscription.save();
-    res.json({ subscription, refund: 0 });
+
+    res.json({ success: true, subscription });
   } catch (err) {
+    console.error("Premium cancellation error:", err);
     res.status(500).json({ error: "Unable to cancel Premium" });
   }
 });
 
-export async function handleCashfreeWebhook(rawBody, signature, timestamp, payload) {
+export async function handleCashfreeWebhook(
+  rawBody,
+  signature,
+  timestamp,
+  payload,
+) {
   const { verifyWebhookSignature } = await import("../services/cashfree.js");
-  if (!verifyWebhookSignature(rawBody, timestamp, signature)) throw new Error("Invalid Cashfree webhook signature");
+  if (!verifyWebhookSignature(rawBody, timestamp, signature))
+    throw new Error("Invalid Cashfree webhook signature");
   const orderIdValue = payload?.data?.order?.order_id;
   if (orderIdValue) await fulfillPaidOrder(orderIdValue, payload);
 }
@@ -129,7 +287,12 @@ export async function handleCashfreeWebhook(rawBody, signature, timestamp, paylo
 router.post("/webhook", async (req, res) => {
   try {
     const rawBody = req.body.toString("utf8");
-    await handleCashfreeWebhook(rawBody, req.headers["x-webhook-signature"], req.headers["x-webhook-timestamp"], JSON.parse(rawBody));
+    await handleCashfreeWebhook(
+      rawBody,
+      req.headers["x-webhook-signature"],
+      req.headers["x-webhook-timestamp"],
+      JSON.parse(rawBody),
+    );
     res.sendStatus(200);
   } catch (err) {
     console.error("Cashfree webhook error:", err.message);

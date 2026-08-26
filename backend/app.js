@@ -5,22 +5,20 @@ import dotenv from "dotenv";
 import testRoutes from "./routes/testRoutes.js";
 import pathwayRoutes from "./routes/pathwayRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
-import razorpayWebhook from "./webhooks/razorpayWebhook.js";
 import resumeHistoryRoutes from "./routes/resumeHistoryRoutes.js";
 import linkedinRoutes from "./routes/linkedinRoutes.js";
+import cashfreeRoutes from "./routes/cashfreeRoutes.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 
-app.use(
-  "/api/razorpay",
-  express.raw({ type: "application/json" }),
-  razorpayWebhook,
-);
-
+// Cashfree webhooks need the raw request body for signature verification.
+app.use("/api/cashfree/webhook", express.raw({ type: "application/json" }), (req, res, next) => {
+  req.url = "/webhook";
+  cashfreeRoutes(req, res, next);
+});
 app.use(express.json());
 
 mongoose
@@ -31,11 +29,9 @@ mongoose
 app.use("/api", testRoutes);
 app.use("/api/pathway", pathwayRoutes);
 app.use("/api/auth", userRoutes);
-app.use("/api/razorpayMain", paymentRoutes);
+app.use("/api/cashfree", cashfreeRoutes);
 app.use("/api/resumeHistory", resumeHistoryRoutes);
 app.use("/api/linkedinHistory", linkedinRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`running on ${PORT}`);
-});
+app.listen(PORT, () => console.log(`running on ${PORT}`));

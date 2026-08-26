@@ -1,0 +1,12 @@
+alright i hope its working now. ive merged it to main. now lets develop the  premium user thing. i already have some code of razorpay, but razorpay is paid to use comercially, check if there is some other payment interface that can be used internationally (including upi payments in india).
+now coming to how payment logic works:
+
+- every free user will have one free chat in prepareai, resumeai and linkedin, they wont be allowed to delete chats.
+- payment will be per new chat and not monthly, make it easy for me to decide and enter price for each chat.
+- there will be a premium fee, which if paid yearly the user can use the app free with infinite chats and stuff on a yearly basis, but if not renewed or if subscription cancelled, they can no longer create chats anywhere.
+- make a page for subscription (ig there is currently already a page which says free for all), define everything in over there for the user explaining how free one works, paid works, how the yearly premium works, options to cancel, etc. also the subscription page should always show current subscription highlighted and use psychological tactics to make them upgrade to the better option, for premium users the page must show some congratulatory thingy and cancel option should be at the bottom hard to locate.
+- link subscription status and payment histories to the profile page of the user as well, there should be subscription cancellation option if the user is subscribed, also make the sections such that user psychologically feels like paying, make the process also really easy.
+- make terms and conditions, user agreements, and then link it wherever necesarry especially footer and in the sign up page (just say by signing up u agree to our user agreement and hyperlink user agreement).
+
+another thing i noted is that, why wud a user feel like they should pay when technically they only will need to make one prepareai pathway, so in the website we should kind of leave subtle signs promoting the user to make multiple pathways to see which is easier for them or anything like that, the idea is to market it psychologically making the user curious to do so.
+Ive made a new branch `feat/subscription` implement these over there. also ask me for whatever accounts to create for payment gateway, api keys, etc and tell me how to get them. also tell me how the test env will work and real env so that i can test everything before deploying
