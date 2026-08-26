@@ -1,191 +1,87 @@
 import User from "../models/User.js";
 import Pathway from "../models/Pathway.js";
+import BillingSubscription from "../models/BillingSubscription.js";
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 dotenv.config();
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const isPremium = (subscription) => subscription?.type === "premium" && subscription?.status === "active" && subscription?.endDate && new Date(subscription.endDate) > new Date();
 
-// Signup controller
 export const signup = async (req, res) => {
   try {
     const name = String(req.body?.name ?? "").trim();
     const email = String(req.body?.email ?? "").trim().toLowerCase();
     const passwordHash = String(req.body?.passwordHash ?? "");
-
-    if (!name || !email || !passwordHash) {
-      return res.status(400).json({
-        error: "Name, email, and password are required.",
-      });
-    }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ error: "Email already in use." });
-    }
-
-    const user = new User({
-      email,
-      passwordHash,
-      name,
-      authProvider: "local",
-    });
-    await user.save();
-
-    const pathway = new Pathway({ user: user.id, chats: [] });
-    await pathway.save();
-    user.pathways = pathway.id;
-    await user.save();
-
-    res.status(201).json({
-      message: "User created successfully.",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        pro: false,
-      },
-    });
+    if (!name || !email || !passwordHash) return res.status(400).json({ error: "Name, email, and password are required." });
+    if (await User.findOne({ email })) return res.status(409).json({ error: "Email already in use." });
+    const user = await User.create({ email, passwordHash, name, authProvider: "local" });
+    const pathway = await Pathway.create({ user: user.id, chats: [] });
+    await BillingSubscription.create({ user: user.id, type: "free", status: "inactive" });
+    await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
+    res.status(201).json({ message: "User created successfully.", user: { id: user.id, name: user.name, email: user.email, pro: false } });
   } catch (err) {
     console.error("Signup error:", err);
-
-    if (err?.code === 11000) {
-      return res.status(409).json({
-        error: "Email already in use.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Signup failed. " + (err?.message || "Unknown server error"),
-    });
+    res.status(err?.code === 11000 ? 409 : 500).json({ error: err?.code === 11000 ? "Email already in use." : `Signup failed. ${err.message}` });
   }
 };
 
-// Login controller
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).populate("subscriptionRef");
-    if (!user) {
-      return res.status(401).json({ error: "Invalid email." });
-    }
-    // const isMatch = await bcrypt.compare(password, user.password);
-    const isMatch = password === user.passwordHash;
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid email or password." });
-    }
-    res.status(200).json({
-      message: "Login successful.",
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        pro: user.subscriptionRef && user.subscriptionRef.status === "active",
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Login failed. " + err.message });
-  }
+    const user = await User.findOne({ email: String(email || "").trim().toLowerCase() }).populate("subscriptionRef");
+    if (!user) return res.status(401).json({ error: "Invalid email." });
+    if (password !== user.passwordHash) return res.status(401).json({ error: "Invalid email or password." });
+    res.status(200).json({ message: "Login successful.", user: { id: user.id, email: user.email, name: user.name, pro: isPremium(user.subscriptionRef) } });
+  } catch (err) { res.status(500).json({ error: "Login failed. " + err.message }); }
 };
 
 export const setMeInfo = async (req, res) => {
   try {
     const { age, role, sex, nationality, id } = req.body;
-
-    await User.findByIdAndUpdate(id, {
-      age,
-      role,
-      nationality,
-      sex,
-    });
-
+    await User.findByIdAndUpdate(id, { age, role, nationality, sex });
     res.status(200).json({ message: "success" });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to set user info. " + err.message });
-  }
+  } catch (err) { res.status(500).json({ error: "Failed to set user info. " + err.message }); }
 };
 
 export const getMeInfo = async (req, res) => {
   try {
-    const id = req.params.id;
-
-    const user = await User.findById(id)
-      .populate("subscriptionRef")
-      .populate("payments");
-
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to set user info. " + err.message });
-  }
+    let user = await User.findById(req.params.id).populate("subscriptionRef").populate("payments");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user.subscriptionRef) {
+      const subscription = await BillingSubscription.create({ user: user.id, type: "free", status: "inactive" });
+      user = await User.findByIdAndUpdate(user.id, { subscriptionRef: subscription._id }, { new: true }).populate("subscriptionRef").populate("payments");
+    }
+    res.status(200).json({ ...user.toObject(), pro: isPremium(user.subscriptionRef) });
+  } catch (err) { res.status(500).json({ error: "Failed to get user info. " + err.message }); }
 };
 
-// Google login — verify id_token, create/link user, ensure Pathway
 export const googleLogin = async (req, res) => {
   try {
     const { idToken, credential } = req.body;
     const token = idToken || credential;
     if (!token) return res.status(400).json({ error: "Missing Google credential" });
-
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const ticket = await googleClient.verifyIdToken({ idToken: token, audience: process.env.GOOGLE_CLIENT_ID });
     const payload = ticket.getPayload();
-    if (!payload || !payload.email_verified) {
-      return res.status(401).json({ error: "Google email not verified" });
-    }
+    if (!payload || !payload.email_verified) return res.status(401).json({ error: "Google email not verified" });
     const { sub: googleId, email, name, picture } = payload;
-
     let user = await User.findOne({ email }).populate("subscriptionRef");
     if (user) {
-      // Link googleId if not already linked, update avatar/name
-      if (!user.googleId) {
-        user.googleId = googleId;
-        user.avatar = picture;
-        if (!user.authProvider || user.authProvider === "local") user.authProvider = "google";
-        await user.save();
-      }
+      if (!user.googleId) { user.googleId = googleId; user.avatar = picture; user.authProvider = "google"; await user.save(); }
     } else {
-      // Try by googleId
       user = await User.findOne({ googleId });
       if (!user) {
-        user = new User({
-          email,
-          name: name || email.split("@")[0],
-          googleId,
-          avatar: picture,
-          authProvider: "google",
-        });
-        await user.save();
-        const pathway = new Pathway({ user: user.id, chats: [] });
-        await pathway.save();
+        user = await User.create({ email, name: name || email.split("@")[0], googleId, avatar: picture, authProvider: "google" });
+        const pathway = await Pathway.create({ user: user.id, chats: [] });
+        await BillingSubscription.create({ user: user.id, type: "free", status: "inactive" });
         await User.findByIdAndUpdate(user.id, { pathways: pathway.id });
       }
       user = await User.findById(user.id).populate("subscriptionRef");
     }
-
-    res.status(200).json({
-      message: "Google login successful.",
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar || picture,
-        pro: !!(user.subscriptionRef && user.subscriptionRef.status === "active"),
-      },
-    });
-  } catch (err) {
-    console.error("Google login error:", err);
-    res.status(401).json({ error: "Google authentication failed. " + err.message });
-  }
+    res.status(200).json({ message: "Google login successful.", user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar || picture, pro: isPremium(user.subscriptionRef) } });
+  } catch (err) { console.error("Google login error:", err); res.status(401).json({ error: "Google authentication failed. " + err.message }); }
 };
 
-// [admin] Get all users controller
 export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch users. " + err.message });
-  }
+  try { res.json(await User.find()); } catch (err) { res.status(500).json({ error: "Failed to fetch users. " + err.message }); }
 };
