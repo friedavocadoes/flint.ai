@@ -7,14 +7,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 
-interface CashfreeWindow extends Window {
-  Cashfree?: (options: { mode: "sandbox" | "production" }) => {
-    checkout: (options: { paymentSessionId: string; redirectTarget: "_modal" | "_self" }) => Promise<any>;
-  };
-}
-
 declare global {
-  interface Window extends CashfreeWindow {}
+  interface Window {
+    Cashfree?: (options: { mode: "sandbox" | "production" }) => {
+      checkout: (options: { paymentSessionId: string; redirectTarget: "_modal" | "_self" }) => Promise<any>;
+    };
+  }
 }
 
 export default function CashfreePayButton({
