@@ -28,8 +28,22 @@ export function useUserInfo(userId?: string | undefined) {
       setLoading(false);
       return;
     }
-    setLoading(true);
-    fetchUser().finally(() => setLoading(false));
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      // A modal checkout does not necessarily navigate through /subscribe,
+      // and webhooks can arrive slightly later. Reconcile incomplete orders
+      // before loading the dashboard so recently completed purchases appear.
+      try {
+        await axios.post(`${process.env.NEXT_PUBLIC_BACKEND}/api/cashfree/reconcile`, { userId: user.id });
+      } catch {
+        // Reconciliation is a recovery aid; profile loading should still work.
+      }
+      if (active) await fetchUser();
+      if (active) setLoading(false);
+    };
+    load();
+    return () => { active = false; };
   }, [user?.id, fetchUser]);
 
   useEffect(() => {
