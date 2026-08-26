@@ -1,199 +1,165 @@
 # AGENTS.md — Flint.ai
 
-> Career Pathway Assist — AI-powered career roadmap + resume ATS analyzer + (planned) mock interviews / community.
+> Career Pathway Assist — AI roadmap + ATS + LinkedIn optimizer + (planned) mock interviews / community.
 
-This file is the canonical onboarding for any AI agent or human contributor working in this repo. Read it before touching code. Keep it updated when you change architecture.
+This is the canonical onboarding for any AI/human contributor. Read before touching code. Keep updated when you change contracts. Links use `path:line`.
 
-## 1. Project Purpose & Roadmap
+## 1. Purpose & Roadmap
 
-Flint.ai is a SaaS that helps users craft a realistic career journey. Current MVP (`README.md:1`): resume upload + ATS scoring, user profile setup, AI career pathway (text + React Flow chart), basic dashboard. Phase 2/3 plan: mock interview bot, JD analyzer, cover-letter generator, community hub, progress analytics.
+MVP live: `/prepareAI` 3-step wizard → gamified roadmap (React Flow), `/resumeAI` ATS analyzer (PDF+role → score 0–100 + fixes/keywords) + history, `/linkedin` optimizer (headline/About/experience rewrite + ATS), `/profile` + Google OAuth. Phase 2/3: mock interview bot, JD analyzer, cover-letter, community, analytics. Brand `Flint.ai`, `next-themes` dark/light, shadcn `new-york`/`stone` (`components.json:3`), `Outfit` (`layout.tsx:12`).
 
-Brand: `Flint.ai`, theme: dark/light via `next-themes`, shadcn `new-york` / `stone` (`components.json:3`).
+`instruct.md:1` tracks AI-provider plan (Gemini 2.5-flash now, OpenRouter/Groq evaluated for cost/rate-limiting).
 
-## 2. High-Level Architecture
+## 2. Architecture
 
 ```
 flint.ai/
-├── src/            # Next.js 16 App Router frontend (React 19, TS, Tailwind 4)
-│   ├── app/        # Routes + API routes (Gemini proxy)
-│   ├── components/ # shadcn/ui + custom (Navbar, PromptForm, ResumeForm, payButton…)
-│   ├── context/    # UserContext (localStorage auth)
-│   ├── hooks/      # protectedRoute, useUserInfo, use-mobile
-│   ├── content/    # routes.js, roles.json, countries.json
-│   └── lib/utils.ts
-├── backend/        # Express 5 + Mongoose 8 (ESM) — separate deploy
-│   ├── app.js      # CORS + Mongo + route mounting + Razorpay webhook (raw body)
-│   ├── models/     # User, Pathway, Payment, Subscription
-│   ├── controllers/# userController, pathwayController
-│   ├── routes/     # userRoutes, pathwayRoutes, paymentRoutes, testRoutes, subscriptionRoutes
-│   ├── webhooks/   # razorpayWebhook (HMAC verify)
-│   └── util/writeToFile.js
-└── public/thumbs/  # Images for navbar-menu ProductItem
+├── src/ # Next 16 App Router (React 19, TS, Tailwind 4)
+│   ├── app/ # routes + api proxy (gemini, resume, linkedin)
+│   │   ├── prepareAI/ # 3-step wizard + InteractiveRoadmap
+│   │   ├── resumeAI/ # protected + history
+│   │   ├── linkedin/ # optimizer + history
+│   │   ├── api/gemini|resume|linkedin/route.* # GEMINI_API_KEY server-only
+│   │   └── lib/geminiPrompt.ts # prepareAIPrompt, resumeAIPrompt, linkedinPrompt
+│   ├── components/ # Navbar, PromptForm, ResumeForm, GoogleLoginButton, pathway/, resume/, linkedin/
+│   ├── context/ # UserContext (localStorage)
+│   ├── hooks/ # protectedRoute, useUserInfo, use-mobile
+│   ├── lib/locationMeta.ts # PRIORITY_COUNTRIES, getPrioritizedCountries, COUNTRY_CURRENCY
+│   ├── content/routes.js, roles.json, countries.json
+│   └── types/ # user.ts, flow-viewer.ts, file-upload.ts
+├── backend/ # Express 5 + Mongoose 8 (ESM)
+│   ├── app.js # CORS + raw webhook + Mongo + mounts
+│   ├── models/ # User, Pathway (rich), ResumeReview, LinkedinReview, Payment, Subscription
+│   ├── controllers/ # user, pathway, resume, linkedin
+│   ├── routes/ # user, pathway, resumeHistory, linkedinHistory, payment, test
+│   └── webhooks/razorpayWebhook.js
+└── public/thumbs/
 ```
 
-**Two deployments, one origin contract:** Frontend expects `process.env.NEXT_PUBLIC_BACKEND` (`src/hooks/useUserInfo.tsx:18`, `src/components/promptForm.tsx:59`, etc.) to point at the Express app (`http://localhost:5000` in `.env:1`). Next API routes (`src/app/api/gemini/route.js:8`, `src/app/api/resume/route.ts:7`) proxy Gemini so the browser key never leaks.
+Two deploys, one contract: `NEXT_PUBLIC_BACKEND` (`hooks/useUserInfo.tsx:18`) points at Express (`http://localhost:5000`). Next API routes proxy Gemini.
 
-## 3. Frontend — Next.js (src/)
+## 3. Frontend — Next.js
 
-### 3.1 Stack & Tooling
-- Next 16.2.7 (`next.config.ts:1`) with `eslint.ignoreDuringBuilds` + `typescript.ignoreBuildErrors` true — builds swallow lint/type errors. Fix before shipping to production.
-- Tailwind 4 + `tw-animate-css` (`src/app/globals.css:1`), CSS variables for stone theme, `Outfit` font (`src/app/layout.tsx:11`).
-- shadcn aliases `@/* -> ./src/*` (`tsconfig.json:25`, `components.json:13`). `jsx: preserve` (changed from `react-jsx` in uncommitted diff) — needed for Next compiler.
-- UI primitives: Radix (dialog, dropdown, tabs, etc.), `lucide-react`, `@tabler/icons-react`, `motion`, `@shadergradient/react` for hero, `reactflow` for career chart, `react-dropzone`, `axios`, `zod + react-hook-form`, `sonner` toasts.
+### 3.1 Stack
+- Next 16.2.7 `next.config.ts:1` (`typescript.ignoreBuildErrors:true`, `eslint` key removed in 16 — run `npm run lint` separately). `jsx: react-jsx` (auto, not `preserve`).
+- Tailwind 4 + `tw-animate-css` (`globals.css:1`), `Outfit`, `stone` theme. Aliases `@/*` (`tsconfig.json:25`).
+- Radix, `lucide-react`, `motion`, `@shadergradient/react`, `reactflow`, `react-dropzone`, `axios`, `zod+rhf`, `sonner`, `@react-oauth/google@0.13.5`.
 
-### 3.2 Layout & Shell
-- `src/app/layout.tsx:23` — `RootLayout` wraps `<UserProvider>` → `<ThemeProvider>` → `<SidebarProvider>` → `<Navbar />` → `{children}` → `<Footer />` → `<Toaster>`.
-- `src/components/Navbar.tsx:35` — center `Tools`/`Support` hover menus, right auth CTA or `UserDropDown`. Mobile drawer is `AppSidebar` from `mobile-sidebar.tsx`. Active route label injected from `src/content/routes.js:1`.
-- `src/app/page.tsx:7` — marketing hero with `ShaderGradientCanvas` (z-0) + hero copy (z-10).
+### 3.2 Shell
+- `layout.tsx:32` → `GoogleOAuthProvider` (clientId `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) → `UserProvider` → `ThemeProvider` → `SidebarProvider` → `Navbar` → `{children}` → `Footer` → `Toaster`.
+- `Navbar.tsx:33` — fixed `h-14 z-[100]`, left logo + `/prepareAI|/resumeAI|/linkedin|/upgrade` breadcrumb, center `Tools` (Resume, Prepare, LinkedIn `thumbs/linkedin.svg`, Discussions) / `Support` `HoveredLink`, right `UserDropDown` or `Sign Up/Log in`, `ModeToggle`. Mobile hamburger `SidebarTrigger hamburger` → `AppSidebar` (`mobile-sidebar.tsx`).
+- `page.tsx:7` hero `ShaderGradientCanvas` + CTA.
 
-### 3.3 Auth & User State
-- **No JWT / cookies.** Auth is `localStorage.setItem("user", JSON.stringify({id,name,email,pro}))` in `src/context/userContext.tsx:39` + `clearUser` on logout. `UserProvider` hydrates from localStorage on mount (`userContext.tsx:24`).
-- `src/hooks/protectedRoute.ts:7` — `useProtectedRoute()` redirects to `/auth` with `toast.warning` if `!user`. `useUserExists()` (`protectedRoute.ts:20`) bounces logged-in users from `/auth` to `/prepareAI`.
-- `src/components/Login.tsx:27` / `Signup.tsx:31` — POST to `${NEXT_PUBLIC_BACKEND}/api/auth/login|signup`. Signup payload uses `passwordHash: password` field name (`Signup.tsx:34`), login uses `password` (`Login.tsx:29`). Backend compares plaintext (`backend/controllers/userController.js:35` `password === user.passwordHash`) — see §12 Tech Debt.
-- On signup success, `updateUser` + push to `/hello` (`Signup.tsx:52`). Login just toasts; redirect is via `useUserExists` or manual nav.
+### 3.3 Auth — localStorage + Google OAuth
+- **No JWT/cookies yet.** `context/userContext.tsx:39` → `localStorage.setItem("user",JSON.stringify({id,name,email,pro,avatar}))`, hydrates on mount with `loading` flag (`user, loading`).
+- `hooks/protectedRoute.ts:7` `useProtectedRoute()` waits for `loading` then `router.replace("/auth")` + `toast.warning`; `useUserExists()` bounces authed users from `/auth` to `/prepareAI` (skips if `pathname==="/hello"`).
+- `GoogleLoginButton.tsx:21` → `@react-oauth/google` `GoogleLogin` → `POST ${BACKEND}/api/auth/google {idToken}` → `userController.js:85` `google-auth-library` `verifyIdToken({audience:GOOGLE_CLIENT_ID})` → find/link by `email`/`googleId`, create `User+Pathway` if new, return `{id,name,email,avatar,pro}` → `updateUser` → fetch `GET /api/auth/me/:id` to decide `router.push(routes.prepare)` if profile complete else `routes.auth.hello` (role/nationality/sex/age).
+- `Login.tsx:27` / `Signup.tsx:31` still `POST /api/auth/login|signup` (plaintext compare `userController.js:35` — tech debt). `Signup` hardened: duplicate check, `passwordHash` optional for google users. `User.js:7` now `{googleId sparse unique, avatar, authProvider enum local|google}`.
+- `types/user.ts:102` `User` includes `avatar, googleId, authProvider`.
 
-### 3.4 Onboarding — /hello
-- `src/app/hello/page.tsx:24` — collects `nationality` (ComboBox from `content/countries.json`), `role` (`content/roles.json`), `age`, `sex` (RadioGroup). Calls `useUserInfo().setMeInfo` (`hooks/useUserInfo.tsx:26`) → POST `/api/auth/me` → push `/profile`. No validation beyond empty check.
+### 3.4 Onboarding `/hello`
+- `hello/page.tsx:24` collects `nationality, role, age, sex` via `ComboBox` (`countries.json`, `roles.json`), calls `useUserInfo().setMeInfo` → `POST /api/auth/me` → `/profile`.
 
-### 3.5 Career Pathway — /prepareAI (core feature)
-- Protected route (`src/app/prepareAI/page.tsx:18`).
-- Left `AppSidebar` (`src/components/chat-sidebar.tsx`) lists past chats (fetched via `GET /api/pathway/chats/:userId` in `prepareAI/page.tsx:42`). `SidebarTrigger` toggles.
-- `src/components/promptForm.tsx:14` — `PromptForm` collects: `role`, `targetCompanies`, `expertise`, `weakAreas`, `skillLevel` (slider 0-10), `timeCommitment` (slider 0-24), `extraRemarks`. On submit:
-  1. `POST /api/gemini` with `promptData` (`promptForm.tsx:41`).
-  2. `POST ${BACKEND}/api/pathway/chat` with `{user, chat:{promptData}}` (`pathwayRoutes.js:20` → `pathwayController.js:27`).
-  3. `PUT ${BACKEND}/api/pathway/chat/:chatId` with Gemini JSON (`promptForm.tsx:66`) → expects `{chat:{title,textual,flowjson}}`.
-  4. `onChatCreated(chatId)` triggers `refreshChats()` + `setSelectedChatId`.
-- Prompt template: `src/app/lib/geminiPrompt.ts:16` `prepareAIPrompt()` — forces JSON `{chat:{title,textual,flowjson:{pathwayData:{stages,connections}, structData:{nodes,edges}}}}` with `x = index*300` layout. `responseMimeType: "application/json"` in `src/app/api/gemini/route.js:25`.
-- Viewer: `src/components/ui/flow-viewer.tsx` wraps `reactflow`. Markdown via `src/components/markDownViewer.tsx` (`@uiw/react-markdown-preview`). `PromptDisplay` (`iDisplay.tsx`) + `AlertDisplay` (delete chat `DELETE /api/pathway/chat/:id`) per selected chat. Flow hidden on mobile with amber warning (`prepareAI/page.tsx:104`).
+### 3.5 PrepareAI — 3-step wizard (core)
+- **Route** `prepareAI/page.tsx:16` protected, `AppSidebar` (`chat-sidebar.tsx`) + `SidebarTrigger` inside `SidebarInset` header (hover to expand `mt-14 h-[calc(100svh-3.5rem)]`). Mobile `Sheet` History.
+- **PromptForm.tsx:14** — 3 steps with `step=1..3`, `currency` from `locationMeta.ts:42` (`getCurrencyForCountry`), `prioritizedCountries` (PRIORITY_COUNTRIES pinned + rest A→Z):
+  - Step1 Geo: `hasTargetCountry` yes/no, `targetCountry` via `ComboBox` (prioritized), salary `targetSalary` + `salaryCurrency` + `salaryPeriod`.
+  - Step2 Current reality: `currentResidenceCountry`, `currentStatus` (studying|working|freelance|seeking|break) → conditional `fieldOfStudy, educationLevel, graduationTimeline` or `currentRole, yearsInTargetDomain`.
+  - Step3 Target+calibration: `role`/`desiredField` + `roleSpecificity`, `hasTargetCompany` → `targetCompanies` or `companyTypePreference` (multi-select `COMPANY_TYPES`), `opportunityType` (if studying), `workModePreference`, `expertise, weakAreas`, `skillLevel` 0-10, `hours` 0-12, `extraRemarks`.
+  - On submit `POST /api/gemini {promptData}` → `POST ${BACKEND}/api/pathway/chat {user, chat:{promptData}}` → `PUT /api/pathway/chat/:id` with Gemini JSON.
+- **Prompt** `geminiPrompt.ts:16` `prepareAIPrompt()` builds hyper-personalized string (geo, residence, status, salary, company type) and asks for JSON `{chat:{title,summary,overview,textual,meta{chances,verdict,timeline,level,commitmentFit},motivation{streakTip,nextWin},flowjson{pathwayData{stages[5-7 rich],connections}, structData}}}`. Rules: visa task if `targetCountry != residence`, front-load if `graduationTimeline<6mo`, bridge if `fieldOfStudy` mismatch, tailor to `companyTypePreference`, salary sanity-check, `x=index*320`.
+- **Model** `Pathway.js:3` — `promptDataSchema` now 22 fields (targetCountry…extraRemarks), `stageSchema` rich (subtitle, description, icon (lucide), type, difficulty, estimatedDuration/Hours, xp, whyItMatters, deliverable, order, tasks[], resources[]), `flowJsonSchema`, `progressSchema {completedStageIds,completedTaskIds,xpEarned}`, `metaSchema {chances,verdict,timeline}`, `chatSchema {title,summary,textual,overview,meta,motivation,flowjson,progress,promptData}`. One `Pathway` per user.
+- **Viewer** `pathway/InteractiveRoadmap.tsx` — `PathwayHeader` (chances ring, timeline), `MilestoneCard` (icon, difficulty, tasks checklist, resources), progress via `PUT /api/pathway/chat/:id/progress` (`pathwayController.js:110` handles bulk or `stageId/taskId` toggle, recalc xp). `flow-viewer.tsx` `readOnly` mode for roadmap. `iDisplay.tsx` + `AlertDisplay` per chat.
 
-### 3.6 Resume AI — /resumeAI
-- `src/app/resumeAI/page.tsx:9` — `file` (PDF) + `role` validation, `POST /api/resume` as `FormData`.
-- Next route `src/app/api/resume/route.ts:7` — converts PDF to base64, builds prompt via `resumeAIPrompt()` (`geminiPrompt.ts:96`), calls `gemini-2.5-flash` with `inlineData` PDF part. Returns `{output: response.text}` (Markdown).
-- Prompt asks for ATS score `XX/100`, Key Fixes, Strengths, Keyword Match, Verdict — brutally concise.
-- UI: `src/components/ResumeForm.tsx:8` with `PlaceholdersAndVanishInput` + `FileUpload` (`src/components/ui/file-upload.tsx`), result rendered by `MarkdownViewer` + `X` clear button. No backend persistence for resumes (`User.resume` is just String stub).
+### 3.6 ResumeAI `/resumeAI` — protected + history
+- `resumeAI/page.tsx:32` protected (`isAuthResolving` guard), history `ResumeHistorySidebar` (`resume/ResumeHistorySidebar.tsx`) hover (`onMouseEnter→setOpen(true)`) `mt-14`, `SidebarInset` `pt-14`.
+- `ResumeForm.tsx:15` polished card (PDF drop `FileUpload`, role chips, optional JD toggle, validation).
+- Next `api/resume/route.ts:22` — `responseMimeType:"application/json"`, `jsonrepair` fallback, normalizes `atsScore` sum, ensures `breakdown`, returns `{atsScore,...,output:rawMarkdown}`.
+- Prompt `geminiPrompt.ts:96` `resumeAIPrompt()` asks for strict JSON `{atsScore,verdict,summary,breakdown[5],keyFixes, strengths, keywordMatch{present,missing,suggestions}, highlights[{page,section,issue}], nextSteps, rawMarkdown}`.
+- Backend `ResumeReview.js:3` `{user, role, jd, fileName, fileSize, atsScore, verdict, result Mixed, topFix}`, `resumeHistoryRoutes.js` `POST /`, `GET /user/:userId`, `DELETE /:id` mounted at `/api/resumeHistory` (`app.js:35`). Frontend saves after scan via `POST /api/resumeHistory` and reads history. Dashboard `resume/ResumeDashboard.tsx` + `ATSGauge` + `PDFPreview`.
 
-### 3.7 Profile & Billing
-- `src/app/profile/page.tsx:16` — `useUserInfo()` pulls `GET /api/auth/me/:id` (populates `subscriptionRef`, `payments`). Renders name/avatar, bio grid, Premium card placeholder, `PaymentTable` (`src/components/paymentTable.tsx`) over `userInfo.payments`.
-- `src/app/subscribe/page.tsx:44` — pricing grid (Solo ₹199, Enterprise ₹999, Pay-per-chat ₹99) + comparison table. Currently overridden by `HolUp` (`subscribe/page.tsx:186`) that renders “Free for all” — payment UI is gated but `PayPerUseCard` + `PayButton` exist.
-- `src/components/payButton.tsx:22` — loads `checkout.razorpay.com`, `POST /api/razorpayMain/create-order` with `{amount, id:user.id, paymentType}`, opens `window.Razorpay` with `NEXT_PUBLIC_RAZORPAY_KEY_ID`. `onSuccess`/`onFailure` callbacks wired.
-- `src/app/payTest/page.tsx:5` — manual test harness for PayButton.
+### 3.7 LinkedIn `/linkedin` — NEW
+- `linkedin/page.tsx:33` protected, `LinkedinHistorySidebar` (hover, `Past optimizations`), `SidebarInset`.
+- `LinkedinForm.tsx` — `targetRole, targetCompanies, currentHeadline, currentAbout, currentExperience, tone, keywords` + validation.
+- `api/linkedin/route.ts:22` → `linkedinPrompt` (similar JSON, headline/About rewrite, overallScore, optimized copy) with `responseMimeType json` + `jsonrepair`.
+- Backend `LinkedinReview.js:3` `{user, targetRole, targetCompanies, headlineScore, overallScore, tone, inputs{headline,about,experience,keywords}, result Mixed, topTip}`, `linkedinRoutes.js` `POST /`, `GET /user/:userId`, `DELETE /:id` at `/api/linkedinHistory` (`app.js:36`). `LinkedinDashboard.tsx` shows optimized copy + copy buttons.
 
-### 3.8 Routing Table (src/content/routes.js:1)
+### 3.8 Profile & Billing
+- `profile/page.tsx:16` `useUserInfo()` `GET /api/auth/me/:id` (populate `subscriptionRef,payments`), avatar from `googleId` if present, `PaymentTable`.
+- `subscribe/page.tsx:44` still `HolUp` free-for-all gate; `PayPerUseCard`+`PayButton` exist. `payButton.tsx:37` `POST /api/razorpayMain/create-order`.
+
+### 3.9 Routes `content/routes.js:1`
 ```
-sub: /subscribe, profile: /profile, resume: /resumeAI, prepare: /prepareAI,
-mockInterviews/discussions: "#",
-static: {contact: external github, issue: external github issues/new/choose, documentation: /documentation},
-auth: {loginRoute: /auth, signupRoute: /auth?tab=signup, hello: /hello}
+sub:/subscribe, profile:/profile, resume:/resumeAI, prepare:/prepareAI, linkedin:/linkedin,
+static{contact:github, issue:issues/new/choose, documentation:/documentation},
+auth{loginRoute:/auth, signupRoute:/auth?tab=signup, hello:/hello}
 ```
-`Navbar.tsx` maps these to `ProductItem` + `HoveredLink`. Keep this file as single source of truth.
 
-## 4. Backend — Express (backend/)
+## 4. Backend — Express
 
-### 4.1 Boot — backend/app.js:1
-- `cors()` default (allow all), `express.raw` only for `/api/razorpay` webhook before `express.json()`.
-- Mongo connect via `process.env.MONGO_URI`. Mounts: `/api` → `testRoutes`, `/api/pathway` → `pathwayRoutes`, `/api/auth` → `userRoutes`, `/api/razorpayMain` → `paymentRoutes`, `/api/razorpay` (raw) → `razorpayWebhook`. `PORT` env or 5000.
+### 4.1 Boot `app.js:15`
+`cors()`, `express.raw` for `/api/razorpay` before `json()`, `mongoose.connect(MONGO_URI)`, mounts `/api` test, `/api/pathway`, `/api/auth`, `/api/razorpayMain`, `/api/razorpay` webhook, `/api/resumeHistory`, `/api/linkedinHistory`.
 
 ### 4.2 Models
-- `backend/models/User.js:3` — `{name, email(unique), passwordHash, age, role, sex enum Male/Female/Other, nationality, pathways ref Pathway, resume String, subscriptionRef ref Subscription, payments [ref Payment], timestamps}`. Note: `pathways` is singular ObjectId though it holds many chats.
-- `backend/models/Pathway.js:3` — `promptDataSchema`, `stageSchema {id,title}`, `connectionSchema {from,to}`, `flowJsonSchema {pathwayData{stages,connections}, structData{nodes,edges:Mixed}}`, `chatSchema {title,textual,flowjson,promptData,chatType enum ppc|sub|free default free, isLocked, timestamps}`, `pathwaySchema {user ref User, chats:[chatSchema], timestamps}`. One Pathway doc per user.
-- `backend/models/Payment.js:5` — `{user ref, razorpayOrderId, razorpayPaymentId, status enum created|paid|failed, amount Number (paise), paymentDate, source enum solo|enterprise|ppc|other, payload Object, timestamps}` plus `post("save")` hook (`Payment.js:23`) that `$addToSet` user.payments, then upserts Subscription (ppc increments `activeChatCredits`, solo/enterprise sets `status:active` + 30d endDate).
-- `backend/models/Subscription.js:4` — `{user ref, type enum solo|enterprise|ppc|free default free, status active|inactive default inactive, startDate, endDate, activeChatCredits default 1, timestamps}` + `post("save")` to attach to user (`Subscription.js:20` — also contains dead `if (doc.source==="ppc")` check).
+- `User.js:3` `{name,email(unique),passwordHash?,googleId sparse unique,avatar,authProvider,age,role,sex,nationality,pathways ref Pathway,resume String,subscriptionRef,payments[]}`
+- `Pathway.js:3` as above (rich).
+- `ResumeReview.js:3`, `LinkedinReview.js:3` as above.
+- `Payment.js:5` + `post("save")` upsert Subscription; `Subscription.js:4` + post-save.
 
 ### 4.3 Controllers
-- `backend/controllers/userController.js:5` `signup` — checks `email` duplicate, creates `User({email,passwordHash,name})`, creates empty `Pathway({user, chats:[]})`, links `User.pathways`. Returns `{id,name,email,pro}`.
-- `login` (`userController.js:27`) — finds by email, `populate(subscriptionRef)`, plaintext `password === passwordHash`, returns `pro: subscriptionRef.status==="active"`. **874** Serializing: check existingUser flow if adding oauth.
-- `setMeInfo`/`getMeInfo` (`userController.js:53`) — `findByIdAndUpdate` / `findById+populate(subscriptionRef,payments)`.
-- `backend/controllers/pathwayController.js:4` `getAllPathways` — admin gate via `req.body.amaran==="i am admin"` (body on GET — brittle). `getUserChats:17` — `User.findById(id).populate("pathways") → user.pathways`. `createChat:27` — `User.findById(body.user).populate`, then `Pathway.findByIdAndUpdate(user.pathways.id, $push:{chats: body.chat})`. `deleteChat:41`, `updateFlow:61` (only flowjson), `updateChat:81` (title/textual/flowjson) — all use `chats._id` positional `$`.
+- `userController.js:85` `googleLogin` (verifyIdToken, link/create + Pathway, populate pro), `signup/login/setMeInfo/getMeInfo/getAllUsers`.
+- `pathwayController.js:4` `getAllPathways` (amaran body), `getUserChats:17`, `createChat:27` (`$push`), `deleteChat:41`, `updateFlow:61`, `updateChat:81` (now handles `title,overview,summary,meta,motivation,flowjson,progress`), `updateProgress:110` (bulk vs `stageId/taskId` toggle, recalc xp, `$set chats.$.progress`).
+- `resumeController.js` `create/getUser/delete`, `linkedinController.js` similar.
 
 ### 4.4 Routes
-- `backend/routes/userRoutes.js:11` — `POST /signup|/login|/me`, `GET /me/:id`, `GET /users` (admin, no auth).
-- `backend/routes/pathwayRoutes.js:13` — `GET /pathways` (admin), `GET /chats/:id`, `POST /chat`, `DELETE /chat/:id`, `PUT /flow/:id`, `PUT /chat/:id`.
-- `backend/routes/paymentRoutes.js:14` — `POST /create-order` (Razorpay SDK `orders.create` with `notes:{id,paymentType}`), `GET /payments`.
-- `backend/routes/subscriptionRoutes.js:1` — **BROKEN**: `require` syntax in ESM project, `express.router()` lowercase, incomplete. Do not mount until fixed.
-- `backend/routes/testRoutes.js` — trivial health check (not detailed here).
-- `backend/webhooks/razorpayWebhook.js:10` — `POST /webhook`, raw body HMAC `sha256(secret).update(req.body).digest(hex)` vs `x-razorpay-signature`, parses `req.body`, if `payload.order` then `new Payment({...})` from `payment.entity.notes.{id,paymentType}` + order fields, `await payment.save()` (triggers Payment post-save). Writes 200 or 400/500. Needs `ngrok http 5000` + Razorpay dashboard webhook setup (`backend/what.md:1`).
+- `userRoutes.js:11` `POST /signup|/login|/google|/me`, `GET /me/:id|/users`
+- `pathwayRoutes.js:13` `GET /pathways`, `GET /chats/:id`, `POST /chat`, `DELETE /chat/:id`, `PUT /flow/:id`, `PUT /chat/:id`, `PUT|PATCH /chat/:id/progress`
+- `resumeHistoryRoutes.js` + `linkedinRoutes.js` as above
+- `paymentRoutes.js:14` + broken `subscriptionRoutes.js:1` (CJS `require` typo, not mounted)
+- `webhooks/razorpayWebhook.js:10` HMAC `sha256` → `new Payment`.
 
-## 5. Environment Variables
+## 5. Env
 
-Frontend (`src/app/api/*` reads server, `NEXT_PUBLIC_*` is client-bundled):
-```
-NEXT_PUBLIC_BACKEND=http://localhost:5000   # .env:1 (and backend/.env)
-GEMINI_API_KEY=...                          # .env:2 — used only in Next server routes
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...   # .env:3
-```
-Backend (`backend/.env` — not checked in, but required):
-```
-MONGO_URI=mongodb+srv://...
-PORT=5000
-RAZORPAY_KEY_ID=...
-RAZORPAY_KEY_SECRET=...
-RAZORPAY_WEBHOOK_SECRET=...
-```
-Keep `.env*` gitignored (`.gitignore:35`). Never commit secrets. For local dev provide `backend/.env.example`.
+Frontend: `NEXT_PUBLIC_BACKEND=http://localhost:5000`, `GEMINI_API_KEY` (server-only), `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID=720568895708-....apps.googleusercontent.com` (`.env:4`)
+Backend: `MONGO_URI, PORT, RAZORPAY_KEY_ID|SECRET|WEBHOOK_SECRET, GOOGLE_CLIENT_ID (+ SECRET optional for code flow)` (`.env:6`).
 
-## 6. Scripts & Running
+## 6. Scripts
 
-Frontend:
-```bash
-npm run dev     # next dev
-npm run build   # next build (ignores eslint/ts errors — fix before prod)
-npm run lint    # eslint .
-```
-Backend:
-```bash
-cd backend
-npm run dev     # nodemon app.js (package.json:9)
-npm test        # node app.js
-```
-Full local stack: `mongod` or Atlas → `backend npm run dev` → `npm run dev` (root) → webhook: `ngrok http 5000` → paste public URL into Razorpay dashboard webhook `https://<ngrok>/api/razorpay/webhook`.
+`npm run dev` (next), `npm run build` (ignores TS via `next.config.ts:9`), `npm run lint`; `cd backend && npm run dev` (nodemon), `node app.js` dry-run; full stack needs `ngrok http 5000` for webhooks.
 
-## 7. Critical Gotchas & Tech Debt (read before PR)
+## 7. Gotchas
 
-- **Plaintext passwords** — `userController.js:35` compares raw strings; `Signup` sends `passwordHash` field that is actually plaintext. Must add `bcrypt.hash` on signup + `bcrypt.compare` on login (backend already depends on `bcrypt@6`).
-- **Auth is localStorage only** — no httpOnly cookie / JWT / session. `protectedRoute` can be bypassed. Any migration must add server session and keep `UserContext` in sync.
-- **Build ignores errors** — `next.config.ts:5-10` swallows ESLint + TS. CI should enforce `next build` without these flags or run `tsc --noEmit`.
-- **Subscription routes broken** — `backend/routes/subscriptionRoutes.js:1` uses CJS `require` + `express.router()` typo; not mounted in `app.js`. Fix to ESM before using.
-- **`getAllPathways` admin check** — body on GET (`pathwayController.js:6`) will be empty with most clients; move to header/query + proper auth middleware.
-- **Razorpay webhook mount** — `app.js:16` mounts at `/api/razorpay` with `express.raw`, webhook expects POST to `/webhook` → full path `/api/razorpay/webhook`. Ensure `MONGO_URI` etc. set or `mongoose.connect` will throw.
-- **Subscribe page disabled** — `SubscribePage` is defined but default export is `HolUp` (`subscribe/page.tsx:186`) showing “Free for all”. Re-enable when payments ready.
-- **Type laxity** — `eslint.config.mjs:13` disables `@typescript-eslint/no-explicit-any`, many `any` in `geminiPrompt.ts`, `payButton`, `promptForm`.
-- **`tsconfig jsx preserve`** — uncommitted diff changes `react-jsx→preserve`; Next expects `preserve`. Don’t flip back without testing `next build`.
-- **`User.pathways` naming** — singular field holding `Pathway` doc with `chats[]`; don’t confuse with `Pathways` TypeScript interface (`src/types/user.ts:96` has `user:number` typo).
-- **Ngrok required for webhooks** locally — see `backend/what.md:3`.
+- Plaintext `password === passwordHash` (`userController.js:35`) still; `googleId` path bypasses it. Need `bcrypt.hash` + `compare`.
+- Auth still `localStorage` (`userContext.tsx:39` now stores `avatar`), `loading` flag prevents flicker (`protectedRoute.ts:12` waits). No JWT/cookie.
+- `next.config.ts:9` swallows TS; `eslint` key removed in 16.
+- `subscriptionRoutes.js` still broken.
+- `getAllPathways` body on GET, `User.pathways` singular, `tsconfig jsx react-jsx`.
+- `prepareAI` prompt now 22 fields — backend promptData must stay in sync with `locationMeta.ts:6` (PRIORITY_COUNTRIES, getCurrencyForCountry) and frontend `PromptForm.tsx:120`. Old chats lack new fields → prompt falls back to "Not specified".
+- `Sidebar` hover (`onMouseEnter→setOpen(true)`) shares `SidebarProvider` `open` globally; `resumeAI` auto-closes on mount (`setOpen(false)`), affects `prepareAI` if navigating.
 
-## 8. Agent Playbook — How to Work In This Repo
+## 8. Playbook
 
-### General Rules
-- Never commit `node_modules`, `.next`, `.env`, `.vercel`, `*.pem`. Respect `.gitignore:1`.
-- Prefer editing over creating files. When adding a route, update `src/content/routes.js:1` + `Navbar.tsx:42` menu.
-- Keep shadcn aliases (`@/components`, `@/lib/utils`, etc.) —`components.json:13`.
-- Use `sonner` toasts for user feedback, not `alert`.
-- For any Gemini change, edit `src/app/lib/geminiPrompt.ts:1` + corresponding `src/app/api/*/route.*`. Validate JSON shape against `Pathway.flowjson` before `PUT /api/pathway/chat/:id`.
-- For backend model changes, update Mongoose schema + controller + frontend type (`src/types/user.ts:1`, `src/app/prepareAI/types.ts:1`).
+- Never commit `.env`, `node_modules`, `.next`. Respect `.gitignore:35`.
+- Edit > create. When adding route, update `routes.js:1` + `Navbar.tsx:78` `ProductItem`.
+- Keep `@/*` aliases, `sonner` toasts, `locationMeta.ts` for country/currency.
+- Gemini change: edit `geminiPrompt.ts:16` + `api/*/route.*`, validate JSON shape vs Mongoose before `PUT /api/pathway/chat/:id`.
+- Backend model change: update schema + controller + frontend type (`types/user.ts:102`, `prepareAI/types.ts:76`, `linkedin` types).
+- Where to put: page `app/<route>/page.tsx`, ui `components/ui/*`, domain `components/*`, hooks `hooks/*`, Express `routes/* + controllers/*` + mount `app.js:35`.
 
-### Where to Put What
-- New UI page → `src/app/<route>/page.tsx` + `layout.tsx` if needed (see `resumeAI/layout.tsx`).
-- Reusable UI → `src/components/ui/*` (shadcn) or `src/components/*` (domain).
-- Hooks → `src/hooks/*`, context → `src/context/*`.
-- Express endpoint → `backend/routes/<domain>Routes.js` + `backend/controllers/<domain>Controller.js` + mount in `backend/app.js:29`.
+Verification: `npm run lint`, `npm run build`, `cd backend && node --check app.js`, test `PromptForm (3 steps) → Gemini → Pathway`, `ResumeForm + JD → /api/resume → ResumeReview`, `LinkedinForm → /api/linkedin → LinkedinReview`, `GoogleLoginButton` (needs `GOOGLE_CLIENT_ID`), `payTest` webhook.
 
-### Verification Before PR
-- `npm run lint` — fix real errors (ignore the disabled rules above only if intentional).
-- `npm run build` locally; if you changed backend, `cd backend && node app.js` dry-run.
-- For AI flows: test `PromptForm → Gemini → Pathway save` and `ResumeForm → /api/resume` with a real PDF + role.
-- For payments: `payTest/page.tsx:5` + Razorpay test card, verify webhook creates `Payment` + `Subscription` docs in Mongo.
+## 9. Examples
 
-## 9. Example Tasks & Pointers
-
-- **Implement JD Analyzer (Phase 2)** → reuse `src/app/api/resume/route.ts:7` pattern, new prompt in `geminiPrompt.ts:96`, new form similar to `ResumeForm.tsx:8`, add route to `content/routes.js:1`.
-- **Enable Solo/Enterprise checkout** → un-gate `PayButton` in `subscribe/page.tsx:84`, test `paymentRoutes.js:15` order creation, confirm `razorpayWebhook.js:10` → `Payment` post-save → `Subscription` lifecycle.
-- **Fix auth** → `backend/controllers/userController.js:5` add `bcrypt.hash`, issue httpOnly cookie/JWT, replace `userContext.tsx:24` localStorage with cookie read, protect `userRoutes`/`pathwayRoutes` with middleware.
-- **Add progress tracking** → extend `Pathway.chatSchema` with `progress/milestones`, new `PUT /api/pathway/chat/:id/progress`.
-- **Fix subscriptionRoutes** → rewrite to `import express from "express"; const router = express.Router();` + implement `GET /current/:id`.
+- **JD Analyzer** → new `linkedin` is the pattern: reuse `api/resume` JSON, new prompt, new form, new history model, add route.
+- **Enable checkout** → un-gate `PayButton` in `subscribe/page.tsx:84`, test `paymentRoutes.js:15`, confirm `Payment.postSave`.
+- **Fix auth** → add `bcrypt`, JWT httpOnly, replace `userContext` localStorage, protect routes with middleware.
+- **Fix subscriptionRoutes** → `import express from "express"; const router=express.Router();`
+- **AI provider cost** → see `instruct.md:1` (OpenRouter plan, Gemini/Groq for resume PDF).
 
 ## 10. References
-- `README.md:1` roadmap, `backend/what.md:1` ngrok notes, `framework.value` (empty).
-- Key entry points: `src/app/layout.tsx:23`, `backend/app.js:1`, `src/context/userContext.tsx:19`, `src/hooks/protectedRoute.ts:7`, `src/app/lib/geminiPrompt.ts:16`.
+
+`README.md:1`, `backend/what.md:1`, `instruct.md:1` (OpenRouter eval), `framework.value`.
+Entry points: `layout.tsx:32`, `backend/app.js:15`, `userContext.tsx:19`, `protectedRoute.ts:7`, `geminiPrompt.ts:16`, `locationMeta.ts:6`.
 
 ---
-*Agents: keep this file < 400 lines, update it when you change contracts, and link code with `path:line` so reviewers can jump.*
+*Keep <400 lines, update contracts, link `path:line`.*

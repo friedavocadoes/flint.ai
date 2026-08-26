@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "instructions": ["AGENTS.md", "instruct.md"],
   "formatter": {
     "prettier": {
       "command": ["npx", "prettier", "--write", "$FILE"],
@@ -27,7 +27,7 @@
   "agent": {
     "build": {
       "description": "Default build agent for Flint.ai — Next.js frontend + Express backend",
-      "prompt": "You are working on Flint.ai, a career pathway assist SaaS (Next.js 16 + Express 5 + Mongoose 8 + Gemini 2.5-flash + Razorpay). Follow AGENTS.md architecture. Check .env contracts (NEXT_PUBLIC_BACKEND, GEMINI_API_KEY, MONGO_URI, RAZORPAY_*). Respect localStorage auth flow and Pathway(chat) model. Verify with npm run lint and npm run build before finishing.",
+      "prompt": "You are working on Flint.ai (Next 16 + Express 5 + Mongoose 8 + Gemini 2.5-flash + @react-oauth/google + Razorpay). Frontend 3-step prepareAI wizard (geo→reality→target + locationMeta), resume + linkedin optimizers with history. Follow AGENTS.md + instruct.md. Check .env (NEXT_PUBLIC_BACKEND, GEMINI_API_KEY, NEXT_PUBLIC_GOOGLE_CLIENT_ID, GOOGLE_CLIENT_ID, MONGO_URI, RAZORPAY_*). Respect localStorage auth (loading flag) + Pathway rich stages + progress. Verify with npm run lint and npm run build.",
       "tools": {
         "write": true,
         "edit": true,
@@ -45,7 +45,7 @@
     },
     "frontend": {
       "description": "Frontend specialist — Next App Router, shadcn, Tailwind, ReactFlow",
-      "prompt": "You are the Flint.ai frontend specialist. Work in src/. Use shadcn aliases @/* (components.json), Tailwind 4, stone theme, next-themes. Keep Navbar routes in sync with src/content/routes.js. For AI flows edit src/app/lib/geminiPrompt.ts and src/app/api/*/route.* together. Use sonner for toasts, not alert.",
+      "prompt": "You are the Flint.ai frontend specialist. Work in src/. Use shadcn aliases @/*, Tailwind 4 stone, next-themes. Keep Navbar (Tools: Resume/Prepare/LinkedIn) + routes.js in sync. For AI flows edit src/app/lib/geminiPrompt.ts (prepareAIPrompt hyper-personalized with locationMeta, resumeAIPrompt, linkedinPrompt) + src/app/api/*/route.* together with jsonrepair fallback. Use sonner, not alert.",
       "tools": {
         "write": true,
         "edit": true,
@@ -54,7 +54,7 @@
     },
     "backend": {
       "description": "Backend specialist — Express + Mongoose + Razorpay webhook",
-      "prompt": "You are the Flint.ai backend specialist. Work in backend/. ESM only (type: module). Mount routes in backend/app.js. Keep Payment post-save -> Subscription lifecycle intact. Razorpay webhook at /api/razorpay/webhook uses express.raw + HMAC verify. Fix subscriptionRoutes.js ESM typo if touched. Never commit .env.",
+      "prompt": "You are the Flint.ai backend specialist. Work in backend/. ESM only. Mount routes in app.js (pathway, auth, resumeHistory, linkedinHistory, razorpayMain, razorpay webhook). Models: User (googleId/avatar), Pathway (22-field promptData + rich stage + progress + meta), ResumeReview, LinkedinReview, Payment→Subscription post-save. Never commit .env. Keep GOOGLE_CLIENT_ID verify flow.",
       "tools": {
         "write": true,
         "edit": true,
@@ -64,16 +64,26 @@
   },
   "command": {
     "audit-auth": {
-      "template": "Audit the auth flow: frontend src/context/userContext.tsx + src/hooks/protectedRoute.ts + src/components/Login.tsx + src/components/Signup.tsx vs backend backend/controllers/userController.js. Report plaintext password risk, localStorage bypass, and propose bcrypt + JWT fix without breaking current contract.",
-      "description": "Audit plaintext auth + localStorage tech debt",
+      "template": "Audit auth: src/context/userContext.tsx (loading flag) + protectedRoute.ts + GoogleLoginButton.tsx + Login/Signup vs backend userController.js (googleLogin verifyIdToken, signup hardened, plaintext compare). Report localStorage bypass and bcrypt/JWT migration plan.",
+      "description": "Audit auth + Google OAuth tech debt",
       "agent": "plan"
     },
+    "test-prepare": {
+      "template": "Test prepareAI 3-step wizard: PromptForm (1 geo targetCountry+salary, 2 currentResidence+currentStatus conditional, 3 roleSpecificity+companyTypePreference+opportunityType) → POST /api/gemini (prepareAIPrompt hyper-personalized) → POST /api/pathway/chat → PUT /api/pathway/chat/:id + progress PUT /api/pathway/chat/:id/progress. Check locationMeta PRIORITY_COUNTRIES and stage xp recalc.",
+      "description": "Test prepareAI 3-step wizard + progress",
+      "agent": "build"
+    },
+    "test-linkedin": {
+      "template": "Test LinkedIn optimizer: LinkedinForm (targetRole, headline, about, experience, tone) → POST /api/linkedin (linkedinPrompt json) → POST /api/linkedinHistory → dashboard copy buttons + history Sidebar. Check LinkedinReview model and linkedinRoutes.",
+      "description": "Test LinkedIn optimizer + history",
+      "agent": "build"
+    },
     "test-payments": {
-      "template": "Test Razorpay flow: start backend (cd backend && npm run dev), verify POST /api/razorpayMain/create-order, check backend/webhooks/razorpayWebhook.js HMAC, and Payment->Subscription post-save. Use src/app/payTest/page.tsx as harness. Check Mongo Payment + Subscription docs.",
+      "template": "Test Razorpay flow: start backend (cd backend && npm run dev), verify POST /api/razorpayMain/create-order, check webhooks/razorpayWebhook.js HMAC, and Payment->Subscription post-save. Use payTest harness.",
       "description": "Razorpay payment lifecycle test"
     },
     "verify-build": {
-      "template": "Run verification: npm run lint, npm run build (note next.config ignores errors — run tsc --noEmit separately), and cd backend && node --check app.js. Summarize failures.",
+      "template": "Run verification: npm run lint, npm run build (next.config ignores TS), and cd backend && node --check app.js. Check prepareAI, resumeAI, linkedin, GoogleLoginButton, and locationMeta imports.",
       "description": "Lint + build verification"
     }
   }
