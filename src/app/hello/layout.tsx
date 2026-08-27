@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Quick setup",
-  description: "Give Flint a little context so your career recommendations fit you.",
+  title: "A quick intro, then you are in",
+  description: "Tell Flint a few basics so your career recommendations actually fit you.",
   robots: { index: false, follow: false },
 };
 
