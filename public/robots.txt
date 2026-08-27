@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth
+Disallow: /hello
+Disallow: /profile
+
+Sitemap: https://flintai.vercel.app/sitemap.xml
