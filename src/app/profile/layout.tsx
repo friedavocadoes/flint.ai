@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your profile",
-  description: "Manage your Flint.ai account and billing details.",
+  title: "Your Flint profile",
+  description: "Manage your Flint.ai profile, plan, chat allowances and payment history.",
   robots: { index: false, follow: false },
 };
 
