@@ -14,5 +14,8 @@ export default {
     loginRoute: "/auth",
     signupRoute: "/auth?tab=signup",
     hello: "/hello",
+    verifyEmail: "/verify-email",
+    forgotPassword: "/forgot-password",
+    resetPassword: "/reset-password",
   },
 };
