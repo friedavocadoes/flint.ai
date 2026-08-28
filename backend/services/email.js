@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 dotenv.config();
 
 function required(name) {
@@ -16,29 +17,31 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-export async function sendEmail({ to, subject, html }) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${required("RESEND_API_KEY")}`,
-      "Content-Type": "application/json",
+let transporter;
+
+function getTransporter() {
+  if (transporter) return transporter;
+
+  transporter = nodemailer.createTransport({
+    host: required("SMTP_HOST"),
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: String(process.env.SMTP_SECURE || "false") === "true",
+    auth: {
+      user: required("SMTP_USER"),
+      pass: required("SMTP_PASSWORD"),
     },
-    body: JSON.stringify({
-      from: required("RESEND_FROM_EMAIL"),
-      to: [to],
-      subject,
-      html,
-    }),
   });
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(data?.message || "Email delivery failed");
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-  return data;
+  return transporter;
+}
+
+export async function sendEmail({ to, subject, html }) {
+  return getTransporter().sendMail({
+    from: process.env.SMTP_FROM || required("SMTP_USER"),
+    to,
+    subject,
+    html,
+  });
 }
 
 function emailShell(content) {
