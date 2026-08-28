@@ -16,6 +16,7 @@ function VerifyEmailContent() {
   const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(Boolean(token));
   const [resent, setResent] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
 
   useEffect(() => {
     if (!token) return;
@@ -24,7 +25,11 @@ function VerifyEmailContent() {
         toast.success("Email verified. You're good to go.");
         setTimeout(() => router.replace("/auth"), 900);
       })
-      .catch((error) => toast.error(error?.response?.data?.error || "That verification link is invalid or expired."))
+      .catch((error) => {
+        const message = error?.response?.data?.error || "That verification link is invalid or expired.";
+        setVerificationError(message);
+        toast.error(message);
+      })
       .finally(() => setLoading(false));
   }, [token, router]);
 
@@ -42,15 +47,17 @@ function VerifyEmailContent() {
     }
   };
 
+  const showResend = !token || Boolean(verificationError);
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <MailCheck className="mx-auto mb-2 h-10 w-10" />
-          <CardTitle>{token ? "Verifying your email…" : "Check your inbox."}</CardTitle>
-          <CardDescription>{token ? "Give us a second while we confirm the link." : "We sent you a verification link. You need it before Flint will let you in."}</CardDescription>
+          <CardTitle>{verificationError ? "That link didn't work." : token ? "Verifying your email…" : "Check your inbox."}</CardTitle>
+          <CardDescription>{verificationError ? "The link may have expired. No biggie — send yourself a fresh one below." : token ? "Give us a second while we confirm the link." : "We sent you a verification link. You need it before Flint will let you in."}</CardDescription>
         </CardHeader>
-        {!token && (
+        {showResend && (
           <CardContent className="space-y-4">
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
             <Button className="w-full" onClick={resend} disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : "Resend verification email"}</Button>
