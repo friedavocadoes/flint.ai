@@ -46,6 +46,7 @@ export interface User {
   name: string;
   email: string;
   pro?: boolean;
+  emailVerified?: boolean;
   passwordHash?: string;
   avatar?: string;
   googleId?: string;
